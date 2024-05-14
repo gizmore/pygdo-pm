@@ -7,3 +7,4 @@ link_pm = "%s PMs"
 ########
 mt_pm_send = "Send PM"
 md_pm_send = "Send a PM to a user. This works across connectors."
+msg_pm_sent = "The PM to %s has been sent successfully."
