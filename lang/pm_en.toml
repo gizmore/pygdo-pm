@@ -1,3 +1,9 @@
 module_pm = "PM"
 
 link_pm = "%s PMs"
+
+########
+# Send #
+########
+mt_pm_send = "Send PM"
+md_pm_send = "Send a PM to a user. This works across connectors."

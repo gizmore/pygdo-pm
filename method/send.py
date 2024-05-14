@@ -10,14 +10,14 @@ class send(MethodForm):
 
     def gdo_create_form(self, form: GDT_Form) -> None:
         form.add_field(
-            GDT_User('to').not_null(),
+            GDT_User('target').not_null(),
             GDT_Title('title').not_null(),
-            GDT_RestOfText('text').not_null(),
+            GDT_RestOfText('message').not_null(),
         )
         super().gdo_create_form(form)
 
     def form_submitted(self) -> GDT:
-        to = self.param_value('to')
+        to = self.param_value('target')
         return self.reply('msg_pm_sent')
 
 

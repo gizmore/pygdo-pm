@@ -23,11 +23,20 @@ class PMTest(unittest.TestCase):
 
     def test_01_test_send_usage(self):
         result = cli_plug(self.peter, 'pm.send')
-        self.assertIn('to', result, 'To field is not mentioned in pm.send error.')
+        self.assertIn('target', result, 'Target field is not mentioned in pm.send error.')
+        self.assertIn('message', result, 'Message field is not mentioned in pm.send error.')
+        self.assertNotIn('[message]', result, 'Message field should not be optional in pm.send error.')
+        self.assertIn('message\x1b', result, 'Message field does not show error in pm.send error.')
 
-    def test_02_send_pm(self):
-        result = cli_plug(self.peter, 'pm.send giz "Hi There" "This is a pm"')
-        self.assertIn('Too many', result, "GDT_User does not work.")
+    def test_02_forgot_msg(self):
+        result = cli_plug(self.peter, 'pm.send giz "Hi There"')
+        self.assertIn('message\x1b', result, 'Message field does not show error in pm.send error.')
+
+    def test_03_send_pm_from_peter_to_gizmore(self):
+        result = cli_plug(self.peter, 'pm.send giz "Hi There" "Message Body"')
+        self.assertIn('has been sent', result, 'Message sending does not work.')
+
+
 
 if __name__ == '__main__':
     unittest.main()
