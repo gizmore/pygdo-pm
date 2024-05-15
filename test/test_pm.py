@@ -21,6 +21,10 @@ class PMTest(GDOTestCase):
         self.peter = Web.get_server().get_or_create_user('Peter')
         super().setUp()
 
+    def test_00_install_pm(self):
+        reinstall_module('pm')
+        self.assertTrue(True, 'Install does not work.')
+
     def test_01_test_send_usage(self):
         result = cli_plug(self.peter, 'pm.send')
         self.assertIn('target', result, 'Target field is not mentioned in pm.send error.')

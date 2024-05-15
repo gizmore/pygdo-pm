@@ -35,6 +35,7 @@ class send(MethodForm):
 
     def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str, owner: GDO_User):
         pm = GDO_PM.blank({
+            'pm_folder': '1' if target == owner else '2',
             'pm_from': sender.get_id(),
             'pm_to': target.get_id(),
             'pm_owner': owner.get_id(),
