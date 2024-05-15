@@ -10,6 +10,9 @@ from gdo.ui.GDT_Title import GDT_Title
 
 class send(MethodForm):
 
+    def gdo_user_type(self) -> str | None:
+        return 'member,ghost'
+
     def gdo_create_form(self, form: GDT_Form) -> None:
         form.add_field(
             GDT_User('target').not_null(),
