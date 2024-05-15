@@ -5,7 +5,7 @@ from gdo.base.Application import Application
 from gdo.base.ModuleLoader import ModuleLoader
 from gdo.core.GDO_User import GDO_User
 from gdo.core.connector.Web import Web
-from gdotest.TestUtil import reinstall_module, cli_plug, GDOTestCase
+from gdotest.TestUtil import reinstall_module, cli_plug, GDOTestCase, web_plug, WebPlug, cli_gizmore
 
 
 class PMTest(GDOTestCase):
@@ -34,8 +34,18 @@ class PMTest(GDOTestCase):
         self.assertIn('Too many results', result, 'Message field does not show ambigious error in pm.send error.')
 
     def test_03_send_pm_from_peter_to_gizmore(self):
+        cli_gizmore()
         result = cli_plug(self.peter, 'pm.send gizmore{1} "Hi There" Message Body')
         self.assertIn('has been sent', result, 'Message sending does not work.')
+
+    def test_04_pm_overview_web(self):
+        WebPlug.COOKIES = {}
+        out = web_plug("pm.overview.html").exec()
+        self.assertIn('authenticate', out, "PM Center is not restricted to authenticated users.")
+
+        out = web_plug("pm.overview.html").user("Peter").exec()
+        self.assertIn("overview", out, "Web overview does not render nicely.")
+
 
 
 

@@ -2,6 +2,12 @@ module_pm = "PM"
 
 link_pm = "%s PMs"
 
+############
+# Overview #
+############
+mt_pm_overview = "PM Center"
+md_pm_overview = "Show an overview of your PMs"
+
 ########
 # Send #
 ########

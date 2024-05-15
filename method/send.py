@@ -26,9 +26,12 @@ class send(MethodForm):
         target = self.param_value('target') # type: GDO_User
         title = self.param_value('title')
         message = self.param_value('message')
+        self.send_pm(sender, target, title, message)
+        return self.reply('msg_pm_sent', [target.render_name()])
+
+    def send_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str):
         self.create_pm(sender, target, title, message, sender)
         self.create_pm(sender, target, title, message, target)
-        return self.reply('msg_pm_sent', [target.render_name()])
 
     def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str, owner: GDO_User):
         pm = GDO_PM.blank({
@@ -36,8 +39,16 @@ class send(MethodForm):
             'pm_to': target.get_id(),
             'pm_owner': owner.get_id(),
             'pm_title': self.get_title(title, owner),
-            'pm_message': self.get_message(title, owner),
+            'pm_message': self.get_message(message, owner),
             'pm_encrypted': self.get_encrypted(owner),
         }).insert()
 
+    def get_title(self, title: str, user: GDO_User) -> str:
+        return title
+
+    def get_message(self, message: str, user: GDO_User) -> str:
+        return message
+
+    def get_encrypted(self, user: GDO_User) -> str:
+        return '0'
 
