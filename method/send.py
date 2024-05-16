@@ -39,13 +39,10 @@ class send(MethodForm):
             'pm_from': sender.get_id(),
             'pm_to': target.get_id(),
             'pm_owner': owner.get_id(),
-            'pm_title': self.get_title(title, owner),
+            'pm_title': title,
             'pm_message': self.get_message(message, owner),
             'pm_encrypted': self.get_encrypted(owner),
         }).insert()
-
-    def get_title(self, title: str, user: GDO_User) -> str:
-        return title
 
     def get_message(self, message: str, user: GDO_User) -> str:
         return message

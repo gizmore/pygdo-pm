@@ -5,7 +5,7 @@ from gdo.base.Application import Application
 from gdo.base.ModuleLoader import ModuleLoader
 from gdo.core.GDO_User import GDO_User
 from gdo.core.connector.Web import Web
-from gdotest.TestUtil import reinstall_module, cli_plug, GDOTestCase, web_plug, WebPlug, cli_gizmore
+from gdotest.TestUtil import reinstall_module, cli_plug, GDOTestCase, web_plug, WebPlug, cli_gizmore, install_module, web_gizmore
 
 
 class PMTest(GDOTestCase):
@@ -16,14 +16,12 @@ class PMTest(GDOTestCase):
         loader = ModuleLoader.instance()
         loader.load_modules_db(True)
         loader.init_modules()
-        reinstall_module('pm')
+        install_module('pm')
         loader.init_cli()
         self.peter = Web.get_server().get_or_create_user('Peter')
+        cli_gizmore()
+        web_gizmore()
         super().setUp()
-
-    def test_00_install_pm(self):
-        reinstall_module('pm')
-        self.assertTrue(True, 'Install does not work.')
 
     def test_01_test_send_usage(self):
         result = cli_plug(self.peter, 'pm.send')
@@ -38,17 +36,19 @@ class PMTest(GDOTestCase):
         self.assertIn('Too many results', result, 'Message field does not show ambigious error in pm.send error.')
 
     def test_03_send_pm_from_peter_to_gizmore(self):
-        cli_gizmore()
-        result = cli_plug(self.peter, 'pm.send gizmore{1} "Hi There" Message Body')
+        result = cli_plug(self.peter, 'pm.send gizmore{2} "Hi There" Message Body')
         self.assertIn('has been sent', result, 'Message sending does not work.')
 
     def test_04_pm_overview_web(self):
+        out = cli_plug(self.peter, 'pm.send gizmore{2} "Hi There" Message Body')
+        self.assertIn('has been sent', out, 'Message sending does not work.')
+
         WebPlug.COOKIES = {}
         out = web_plug("pm.overview.html").exec()
         self.assertIn('authenticate', out, "PM Center is not restricted to authenticated users.")
 
-        out = web_plug("pm.overview.html").user("Peter").exec()
-        self.assertIn("overview", out, "Web overview does not render nicely.")
+        out = web_plug("pm.overview.html").user("gizmore").exec()
+        self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
 
 
