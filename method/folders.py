@@ -14,6 +14,15 @@ class folders(MethodQueryTable):
     def gdo_searched(self) -> bool:
         return False
 
+    def gdo_paginated(self) -> bool:
+        return False
+
+    def gdo_filtered(self) -> bool:
+        return False
+
+    def gdo_order_name(self) -> str:
+        return 'of'
+
     def gdo_table_headers(self) -> list[GDT]:
         t = self.gdo_table()
         return [

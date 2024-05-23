@@ -39,6 +39,10 @@ class PMTest(GDOTestCase):
         result = cli_plug(self.peter, 'pm.send gizmore{2} "Hi There" Message Body')
         self.assertIn('has been sent', result, 'Message sending does not work.')
 
+    def test_04_folders(self):
+        out = web_plug("pm.folders.html?_lang=en&of=pm_title%20DESC&of=pm_title%20ASC").user("gizmore").exec()
+        self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
+
     def test_04_pm_overview_web(self):
         out = cli_plug(self.peter, 'pm.send gizmore{2} "Hi There" Message Body')
         self.assertIn('has been sent', out, 'Message sending does not work.')
@@ -47,7 +51,7 @@ class PMTest(GDOTestCase):
         out = web_plug("pm.overview.html").exec()
         self.assertIn('authenticate', out, "PM Center is not restricted to authenticated users.")
 
-        out = web_plug("pm.overview.html").user("gizmore").exec()
+        out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
 
