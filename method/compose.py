@@ -11,3 +11,6 @@ class compose(MethodForm):
     def gdo_create_form(self, form: GDT_Form) -> None:
         form.add_field(GDT_User('to').not_null())
         super().gdo_create_form(form)
+
+    def form_submitted(self):
+        return self.redirect(self.module().href('to', f"&user={self.param_value('to').get_id()}"))
