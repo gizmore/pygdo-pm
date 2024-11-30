@@ -14,7 +14,7 @@ class GDO_PM(GDO):
     def gdo_columns(self) -> list[GDT]:
         return [
             GDT_AutoInc('pm_id'),
-            GDT_PMFolder('pm_folder').not_null(),
+            GDT_PMFolder('pm_folder').not_null().cascade_delete(),
             GDT_User('pm_from').not_null(),
             GDT_User('pm_to').not_null(),
             GDT_User('pm_owner').not_null(),

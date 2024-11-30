@@ -18,8 +18,8 @@ class module_pm(GDO_Module):
 
     def gdo_classes(self):
         return [
-            GDO_PM,
             GDO_PMFolder,
+            GDO_PM,
         ]
 
     def gdo_install(self):

@@ -33,6 +33,8 @@ class folders(MethodQueryTable):
     def gdo_table_query(self) -> Query:
         uid = self._env_user.get_id()
         query = super().gdo_table_query()
-        query.select(f'(SELECT COUNT(*) FROM gdo_pm WHERE pm_folder = gdo_pmfolder.pmf_id AND pm_owner={uid}) AS pmf_count')
+        condition = (f'(SELECT COUNT(*) FROM gdo_pm WHERE pm_folder = gdo_pmfolder.pmf_id '
+                     f'AND pm_owner={uid}) AS pmf_count')
+        query.select(condition)
         query.where(f'pmf_owner IS NULL OR pmf_owner={uid}')
         return query
