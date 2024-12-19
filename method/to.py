@@ -13,7 +13,7 @@ class to(MethodForm):
     def gdo_trigger(self) -> str:
         return ''
 
-    def gdo_parameters(self) -> [GDT]:
+    def gdo_parameters(self) -> list[GDT]:
         return [
             GDT_User('target').not_null(),
         ]

@@ -11,7 +11,7 @@ class overview(Method):
     def gdo_user_type(self) -> str | None:
         return 'member,guest,link'
 
-    def gdo_execute(self):
+    def gdo_execute(self) -> GDT:
         cont = GDT_Container().add_field(
             compose().env_copy(self).args_copy(self),
             folders().env_copy(self).args_copy(self),

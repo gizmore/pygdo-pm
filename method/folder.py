@@ -18,7 +18,7 @@ class folder(MethodQueryTable):
     def gdo_table(self) -> GDO:
         return GDO_PM.table()
 
-    def gdo_parameters(self) -> [GDT]:
+    def gdo_parameters(self) -> list[GDT]:
         return [
             GDT_PMFolder('folder').initial('1').not_null(),
         ]
