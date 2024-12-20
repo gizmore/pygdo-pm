@@ -37,17 +37,17 @@ class module_pm(GDO_Module):
             GDT_Bool('mail_on_pm').initial('1'),
         ]
 
-    def cfg_email_on_pm(self) -> bool:
-        return self.get_config_value('mail_on_pm')
+    async def cfg_email_on_pm(self) -> bool:
+        return await self.get_config_value('mail_on_pm')
 
-    def gdo_user_settings(self) -> list[GDT]:
+    async def gdo_user_settings(self) -> list[GDT]:
         settings = []
-        if self.cfg_email_on_pm():
+        if await self.cfg_email_on_pm():
             settings.append(GDT_Bool('email_on_pm').initial('0'))
         return settings
 
-    def gdo_init_sidebar(self, page: 'GDT_Page'):
-        user = GDO_User.current()
+    async def gdo_init_sidebar(self, page: 'GDT_Page'):
+        user = await GDO_User.current()
         if user.is_authenticated():
             page._right_bar.add_field(GDT_Link().href(self.href('overview')).text('link_pm', [1]))
 
