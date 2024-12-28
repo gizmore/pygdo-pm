@@ -43,18 +43,20 @@ class PMTest(GDOTestCase):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
-    def test_04_pm_overview_web(self):
+    def test_05_pm_overview_web(self):
         out = cli_plug(self.peter, '$pm.send gizmore{2} "Hi There" Message Body')
         self.assertIn('has been sent', out, 'Message sending does not work.')
 
+    def test_06_pm_overview(self):
         WebPlug.COOKIES = {}
         out = web_plug("pm.overview.html").exec()
-        self.assertIn('authenticate', out, "PM Center is not restricted to authenticated users.")
+        self.assertIn('restricted', out, "PM Center is not restricted to authenticated users.")
 
+    def test_07_pm_overview_ok(self):
         out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
-    def test_05_pm_compose_complex_message(self):
+    def test_08_pm_compose_complex_message(self):
         pass
 
 
