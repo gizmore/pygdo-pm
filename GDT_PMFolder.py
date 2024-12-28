@@ -9,6 +9,6 @@ class GDT_PMFolder(GDT_ObjectSelect):
         super().__init__(name)
         self.table(GDO_PMFolder.table())
 
-    async def gdo_choices(self) -> dict:
+    def gdo_choices(self) -> dict:
         uid = GDO_User.current().get_id()
         return GDO_PMFolder.table().select().where(f'pmf_owner IS NULL OR pmf_owner = {uid}').exec().fetch_all_dict()
