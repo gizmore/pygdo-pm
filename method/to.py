@@ -4,7 +4,7 @@ from gdo.core.GDT_User import GDT_User
 from gdo.form.GDT_Form import GDT_Form
 from gdo.form.MethodForm import MethodForm
 from gdo.mail.method.send import send
-from gdo.ui.GDT_Message import GDT_Message
+from gdo.message.GDT_Message import GDT_Message
 from gdo.ui.GDT_Title import GDT_Title
 
 

@@ -33,7 +33,7 @@ class PMTest(GDOTestCase):
     def test_02_forgot_msg(self):
         result = cli_plug(self.peter, '$pm.send giz "Hi There"')
         self.assertIn('message\x1b', result, 'Message field does not show error in pm.send error.')
-        self.assertIn('Too many results', result, 'Message field does not show ambigious error in pm.send error.')
+        self.assertIn('Too many results', result, 'Message field does not show ambiguous error in pm.send error.')
 
     def test_03_send_pm_from_peter_to_gizmore(self):
         result = cli_plug(self.peter, '$pm.send gizmore{2} "Hi There" Message Body')
@@ -53,6 +53,9 @@ class PMTest(GDOTestCase):
 
         out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
+
+    def test_05_pm_compose_complex_message(self):
+        pass
 
 
 if __name__ == '__main__':
