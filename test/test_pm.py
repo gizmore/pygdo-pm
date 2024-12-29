@@ -57,7 +57,8 @@ class PMTest(GDOTestCase):
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
     def test_08_pm_compose_complex_message(self):
-        pass
+        out = cli_plug(self.peter, '$pm.send gizmore{2} "Hi There" <b>Message Body</b>')
+        self.assertIn('has been sent', out, 'Message sending does not work.')
 
 
 if __name__ == '__main__':
