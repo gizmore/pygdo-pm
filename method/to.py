@@ -27,7 +27,7 @@ class to(MethodForm):
 
     def form_submitted(self):
         self.send_pm(self._env_user, self.param_value('user'), self.param_val('title'), self.param_val('message'))
-        return self.redirect(self.module().href('overview'))
+        return self.redirect(self.gdo_module().href('overview'))
 
     def send_pm(self, sender: GDO_User, recipient: GDO_User, title: str, message: str):
         send().env_copy(self).args_copy(self).form_submitted()
