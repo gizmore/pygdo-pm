@@ -1,9 +1,11 @@
 from gdo.base.GDO import GDO
 from gdo.base.GDT import GDT
+from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_AutoInc import GDT_AutoInc
 from gdo.core.GDT_Bool import GDT_Bool
 from gdo.core.GDT_User import GDT_User
 from gdo.date.GDT_Created import GDT_Created
+from gdo.date.GDT_Timestamp import GDT_Timestamp
 from gdo.message.GDT_Message import GDT_Message
 from gdo.pm.GDT_PMFolder import GDT_PMFolder
 from gdo.ui.GDT_Title import GDT_Title
@@ -21,5 +23,10 @@ class GDO_PM(GDO):
             GDT_Title('pm_title').not_null(),
             GDT_Message('pm_message').not_null(),
             GDT_Bool('pm_encrypted').not_null(),
+            GDT_Timestamp('pm_read'),
             GDT_Created('pm_created'),
         ]
+
+    @classmethod
+    def unread_count(cls, user: GDO_User) -> int:
+        return cls.table().count_where(f'pm_owner={user.get_id()} AND pm_read IS NULL')

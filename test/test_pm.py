@@ -19,6 +19,7 @@ class PMTest(GDOTestCase):
         loader.init_modules(True, True)
         loader.init_cli()
         self.peter = Web.get_server().get_or_create_user('Peter')
+        self.peter._authenticated = True
         cli_gizmore()
         web_gizmore()
         super().setUp()
@@ -38,6 +39,8 @@ class PMTest(GDOTestCase):
     def test_03_send_pm_from_peter_to_gizmore(self):
         result = cli_plug(self.peter, '$pm.send gizmore{2} "Hi There" Message Body')
         self.assertIn('has been sent', result, 'Message sending does not work.')
+        result = cli_plug(cli_gizmore(), "$pm.read 1")
+        self.assertIn('Hi There', result, "PM Reading does not work")
 
     def test_04_folders(self):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
@@ -59,6 +62,7 @@ class PMTest(GDOTestCase):
     def test_08_pm_compose_complex_message(self):
         out = cli_plug(self.peter, '$pm.send gizmore{2} "Hi There" <b>Message Body</b>')
         self.assertIn('has been sent', out, 'Message sending does not work.')
+
 
 
 if __name__ == '__main__':
