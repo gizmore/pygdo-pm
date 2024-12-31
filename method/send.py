@@ -44,7 +44,7 @@ class send(MethodForm):
             'pm_to': target.get_id(),
             'pm_owner': owner.get_id(),
             'pm_title': title,
-            'pm_message_input': self.get_message(message, owner),
+            'pm_message': self.get_message(message, owner),
             'pm_read': Time.get_date() if sender == owner else None,
             'pm_encrypted': self.get_encrypted(owner),
         }).insert()
