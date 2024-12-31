@@ -16,8 +16,8 @@ class PMTest(GDOTestCase):
         loader = ModuleLoader.instance()
         loader.load_modules_db(True)
         loader.init_modules(True, True)
-        loader.init_cli()
         reinstall_module('pm')
+        loader.init_cli()
         self.peter = Web.get_server().get_or_create_user('Peter')
         self.peter._authenticated = True
         cli_gizmore()
@@ -54,7 +54,7 @@ class PMTest(GDOTestCase):
     def test_06_pm_overview(self):
         WebPlug.COOKIES = {}
         out = web_plug("pm.overview.html").exec()
-        self.assertIn('restricted', out, "PM Center is not restricted to authenticated users.")
+        self.assertIn('Only members are allowed', out, "PM Center is not restricted to authenticated users.")
 
     def test_07_pm_overview_ok(self):
         out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()

@@ -16,7 +16,6 @@ class module_pm(GDO_Module):
         return [
             'gpg',
             'mail',
-            'message',
         ]
 
     def gdo_classes(self):
