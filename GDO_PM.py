@@ -27,6 +27,9 @@ class GDO_PM(GDO):
             GDT_Created('pm_created'),
         ]
 
+    def get_owner(self) -> GDO_User:
+        return self.gdo_value('pm_owner')
+
     @classmethod
     def unread_count(cls, user: GDO_User) -> int:
         return cls.table().count_where(f'pm_owner={user.get_id()} AND pm_read IS NULL')

@@ -15,9 +15,9 @@ class PMTest(GDOTestCase):
         Application.init(os.path.dirname(__file__ + "/../../../../"))
         loader = ModuleLoader.instance()
         loader.load_modules_db(True)
-        reinstall_module('pm')
         loader.init_modules(True, True)
         loader.init_cli()
+        reinstall_module('pm')
         self.peter = Web.get_server().get_or_create_user('Peter')
         self.peter._authenticated = True
         cli_gizmore()
@@ -37,10 +37,11 @@ class PMTest(GDOTestCase):
         self.assertIn('Too many results', result, 'Message field does not show ambiguous error in pm.send error.')
 
     def test_03_send_pm_from_peter_to_gizmore(self):
-        result = cli_plug(self.peter, '$pm.send gizmore{2} "Hi There" Message Body')
+        result = cli_plug(self.peter, '$pm.send gizmore{1} "Hi There" <b>Message<i>Body</i></b>')
         self.assertIn('has been sent', result, 'Message sending does not work.')
-        result = cli_plug(cli_gizmore(), "$pm.read 1")
+        result = cli_plug(cli_gizmore(), "$pm.next")
         self.assertIn('Hi There', result, "PM Reading does not work")
+        self.assertIn('\x1b[1mMessage\x1b[3mBody\x1b[0m\x1b[0m', result, "PM Reading does not work #2")
 
     def test_04_folders(self):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
@@ -58,10 +59,6 @@ class PMTest(GDOTestCase):
     def test_07_pm_overview_ok(self):
         out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
-
-    def test_08_pm_compose_complex_message(self):
-        out = cli_plug(self.peter, '$pm.send gizmore{2} "Hi There" <b>Message Body</b>')
-        self.assertIn('has been sent', out, 'Message sending does not work.')
 
 
 

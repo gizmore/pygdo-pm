@@ -2,6 +2,7 @@ from gdo.base.GDT import GDT
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_RestOfText import GDT_RestOfText
 from gdo.core.GDT_User import GDT_User
+from gdo.date.Time import Time
 from gdo.form.GDT_Form import GDT_Form
 from gdo.form.MethodForm import MethodForm
 from gdo.pm.GDO_PM import GDO_PM
@@ -9,6 +10,9 @@ from gdo.ui.GDT_Title import GDT_Title
 
 
 class send(MethodForm):
+
+    def gdo_trigger(self) -> str:
+        return 'pm.send'
 
     def gdo_user_type(self) -> str | None:
         return 'member,ghost'
@@ -34,13 +38,14 @@ class send(MethodForm):
         self.create_pm(sender, target, title, message, target)
 
     def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str, owner: GDO_User):
-        pm = GDO_PM.blank({
+        GDO_PM.blank({
             'pm_folder': '1' if target == owner else '2',
             'pm_from': sender.get_id(),
             'pm_to': target.get_id(),
             'pm_owner': owner.get_id(),
             'pm_title': title,
-            'pm_message': self.get_message(message, owner),
+            'pm_message_input': self.get_message(message, owner),
+            'pm_read': Time.get_date() if sender == owner else None,
             'pm_encrypted': self.get_encrypted(owner),
         }).insert()
 
