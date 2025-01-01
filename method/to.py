@@ -23,6 +23,7 @@ class to(MethodForm):
             GDT_Title('title').not_null(),
             GDT_Message('message').not_null(),
         )
+        form.href()
         super().gdo_create_form(form)
 
     def form_submitted(self):
