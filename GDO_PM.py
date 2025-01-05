@@ -1,3 +1,4 @@
+from gdo.base.Cache import gdo_cached, Cache
 from gdo.base.GDO import GDO
 from gdo.base.GDT import GDT
 from gdo.core.GDO_User import GDO_User
@@ -32,4 +33,8 @@ class GDO_PM(GDO):
 
     @classmethod
     def unread_count(cls, user: GDO_User) -> int:
-        return cls.table().count_where(f'pm_owner={user.get_id()} AND pm_read IS NULL')
+        if cached := Cache.get('new_pm_count', user.get_id()) is not None:
+            return cached
+        count = cls.table().count_where(f'pm_owner={user.get_id()} AND pm_read IS NULL')
+        Cache.set('new_pm_count', user.get_id(), count)
+        return count

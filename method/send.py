@@ -1,3 +1,4 @@
+from gdo.base.Cache import Cache
 from gdo.base.GDT import GDT
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_RestOfText import GDT_RestOfText
@@ -36,6 +37,7 @@ class send(MethodForm):
     def send_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str):
         self.create_pm(sender, target, title, message, sender)
         self.create_pm(sender, target, title, message, target)
+        Cache.remove('new_pm_count', target.get_id())
 
     def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str, owner: GDO_User):
         GDO_PM.blank({

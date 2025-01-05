@@ -4,6 +4,7 @@ from gdo.base.GDT import GDT
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_Bool import GDT_Bool
 from gdo.core.GDT_User import GDT_User
+from gdo.mail.method.send import send
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.GDO_PMFolder import GDO_PMFolder
 from gdo.ui.GDT_Link import GDT_Link
@@ -61,4 +62,5 @@ class module_pm(GDO_Module):
         Application.EVENTS.subscribe('user_created', self.on_user_created)
 
     def on_user_created(self, user: GDO_User):
+        send()
         pass
