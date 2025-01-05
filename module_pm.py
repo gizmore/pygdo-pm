@@ -7,7 +7,6 @@ from gdo.core.GDT_Bool import GDT_Bool
 from gdo.core.GDT_User import GDT_User
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.GDO_PMFolder import GDO_PMFolder
-from gdo.pm.method.send import send
 from gdo.ui.GDT_Link import GDT_Link
 from gdo.ui.GDT_Page import GDT_Page
 
@@ -69,4 +68,5 @@ class module_pm(GDO_Module):
         Application.EVENTS.subscribe('user_created', self.on_user_created)
 
     def on_user_created(self, user: GDO_User):
+        from gdo.pm.method.send import send
         send().send_pm(self.cfg_welcome_sender(), user, t('welcome_pm_title'), t('welcome_pm_body'))

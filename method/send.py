@@ -8,7 +8,7 @@ from gdo.form.GDT_Form import GDT_Form
 from gdo.form.MethodForm import MethodForm
 from gdo.mail.Mail import Mail
 from gdo.message.GDT_Message import GDT_Message
-from gdo.pm import module_pm
+from gdo.pm.module_pm import module_pm
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.ui.GDT_Title import GDT_Title
 
