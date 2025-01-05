@@ -14,3 +14,9 @@ md_pm_overview = "Show an overview of your PMs"
 mt_pm_send = "Send PM"
 md_pm_send = "Send a PM to a user. This works across connectors."
 msg_pm_sent = "The PM to %s has been sent successfully."
+
+###########
+# Welcome #
+###########
+welcome_pm_title = "Welcome!"
+welcome_pm_body = "Hello and welcome to %s.<br/><br/>"
