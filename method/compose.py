@@ -13,4 +13,4 @@ class compose(MethodForm):
         super().gdo_create_form(form)
 
     def form_submitted(self):
-        return self.redirect(self.gdo_module().href('to', f"&user={self.param_value('to').get_id()}"))
+        return self.redirect(self.gdo_module().href('send', f"&to={self.param_value('to').get_id()}"))
