@@ -6,6 +6,9 @@ from gdo.core.GDT_User import GDT_User
 from gdo.date.Time import Time
 from gdo.form.GDT_Form import GDT_Form
 from gdo.form.MethodForm import MethodForm
+from gdo.mail.Mail import Mail
+from gdo.message.GDT_Message import GDT_Message
+from gdo.pm import module_pm
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.ui.GDT_Title import GDT_Title
 
@@ -22,8 +25,11 @@ class send(MethodForm):
         form.add_field(
             GDT_User('target').not_null(),
             GDT_Title('title').not_null(),
-            GDT_RestOfText('message').not_null(),
         )
+        if self._env_http:
+            form.add_field(GDT_Message('message').not_null())
+        else:
+            form.add_field(GDT_RestOfText('message').not_null())
         super().gdo_create_form(form)
 
     def form_submitted(self) -> GDT:
@@ -36,11 +42,13 @@ class send(MethodForm):
 
     def send_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str):
         self.create_pm(sender, target, title, message, sender)
-        self.create_pm(sender, target, title, message, target)
+        pm = self.create_pm(sender, target, title, message, target)
         Cache.remove('new_pm_count', target.get_id())
+        if module_pm.instance().cfg_welcome_pm():
+            self.send_email(pm)
 
     def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str, owner: GDO_User):
-        GDO_PM.blank({
+        return GDO_PM.blank({
             'pm_folder': '1' if target == owner else '2',
             'pm_from': sender.get_id(),
             'pm_to': target.get_id(),
@@ -56,4 +64,7 @@ class send(MethodForm):
 
     def get_encrypted(self, user: GDO_User) -> str:
         return '0'
+
+    def send_email(self, pm: GDO_PM):
+        mail = Mail.from_bot()
 

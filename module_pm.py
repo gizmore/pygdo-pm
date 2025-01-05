@@ -1,12 +1,13 @@
 from gdo.base.Application import Application
 from gdo.base.GDO_Module import GDO_Module
 from gdo.base.GDT import GDT
+from gdo.base.Trans import t
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_Bool import GDT_Bool
 from gdo.core.GDT_User import GDT_User
-from gdo.mail.method.send import send
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.GDO_PMFolder import GDO_PMFolder
+from gdo.pm.method.send import send
 from gdo.ui.GDT_Link import GDT_Link
 from gdo.ui.GDT_Page import GDT_Page
 
@@ -41,11 +42,17 @@ class module_pm(GDO_Module):
         return [
             GDT_Bool('mail_on_pm').initial('1'),
             GDT_Bool('welcome_pm').initial('1'),
-            GDT_User('welcome_pm_sender').initial('1'),
+            GDT_User('welcome_pm_sender').not_null().initial('1'),
         ]
 
     def cfg_email_on_pm(self) -> bool:
         return self.get_config_value('mail_on_pm')
+
+    def cfg_welcome_pm(self) -> bool:
+        return self.get_config_value('welcome_pm')
+
+    def cfg_welcome_sender(self) -> GDO_User:
+        return self.get_config_value('welcome_pm_sender')
 
     def gdo_user_settings(self) -> list[GDT]:
         settings = []
@@ -62,5 +69,4 @@ class module_pm(GDO_Module):
         Application.EVENTS.subscribe('user_created', self.on_user_created)
 
     def on_user_created(self, user: GDO_User):
-        send()
-        pass
+        send().send_pm(self.cfg_welcome_sender(), user, t('welcome_pm_title'), t('welcome_pm_body'))
