@@ -33,6 +33,8 @@ class view(Method):
         pm = self.get_pm()
         if pm.gdo_val('pm_read') is None:
             pm.save_val('pm_read', Time.get_date())
-        card = GDT_Card()
-        card.add_field(*pm.columns_only('pm_from', 'pm_to', 'pm_title', 'pm_message'))
+        card = GDT_Card().gdo(pm)
+        card.title_raw(pm.render_title())
+        card.get_footer().add_field(pm.column('pm_created'))
+        card.get_content().add_field(*pm.columns_only('pm_from', 'pm_to', 'pm_title', 'pm_message'))
         return card
