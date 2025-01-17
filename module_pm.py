@@ -56,7 +56,7 @@ class module_pm(GDO_Module):
     def gdo_user_settings(self) -> list[GDT]:
         settings = []
         if self.cfg_email_on_pm():
-            settings.append(GDT_Bool('email_on_pm').initial('0'))
+            settings.append(GDT_Bool('email_on_pm').not_null().initial('0'))
         return settings
 
     def gdo_init_sidebar(self, page: 'GDT_Page'):
