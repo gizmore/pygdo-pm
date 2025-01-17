@@ -12,6 +12,7 @@ class PMTest(GDOTestCase):
     peter: GDO_User
 
     def setUp(self):
+        super().setUp()
         Application.init(os.path.dirname(__file__ + "/../../../../"))
         loader = ModuleLoader.instance()
         loader.load_modules_db(True)
@@ -22,7 +23,6 @@ class PMTest(GDOTestCase):
         self.peter._authenticated = True
         cli_gizmore()
         web_gizmore()
-        super().setUp()
 
     def test_01_test_send_usage(self):
         result = cli_plug(self.peter, '$pm.send')
@@ -60,6 +60,10 @@ class PMTest(GDOTestCase):
         out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
+    def test_08_pm_settings(self):
+        out = web_plug('account.settings.html?_lang=en&module=pm').user('gizmore').post({'exmail_on_pm': '1', 'submit_xpm': '1'}).exec()
+        set = web_gizmore().get_setting_val('email_on_pm')
+        self.assertEqual('1', set, 'Cannot set PM setting')
 
 
 if __name__ == '__main__':
