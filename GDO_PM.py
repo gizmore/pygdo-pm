@@ -28,6 +28,9 @@ class GDO_PM(GDO):
             GDT_Created('pm_created'),
         ]
 
+    def gdo_cached(self) -> bool:
+        return False
+
     def get_owner(self) -> GDO_User:
         return self.gdo_value('pm_owner')
 
