@@ -11,5 +11,5 @@ class GDO_PMFolder(GDO):
         return [
             GDT_AutoInc('pmf_id'),
             GDT_Name('pmf_name').label('name'),
-            GDT_Creator('pmf_owner'),
+            GDT_Creator('pmf_owner').not_null(False),
         ]
