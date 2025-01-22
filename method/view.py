@@ -23,7 +23,7 @@ class view(Method):
         if value is None:
             return True
         if value.get_owner() != self._env_user:
-            return self.err('err_permission', ['owner'])
+            return self.err('err_permission', ('owner',))
         return True
 
     def get_pm(self) -> GDO_PM:

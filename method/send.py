@@ -38,7 +38,7 @@ class send(MethodForm):
         title = self.param_value('title')
         message = self.param_value('message')
         self.send_pm(sender, target, title, message)
-        return self.reply('msg_pm_sent', [target.render_name()])
+        return self.reply('msg_pm_sent', (target.render_name(),))
 
     def send_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str):
         self.create_pm(sender, target, title, message, sender, True)
