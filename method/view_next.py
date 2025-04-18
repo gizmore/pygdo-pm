@@ -6,7 +6,8 @@ from gdo.pm.method.view import view
 
 class view_next(Method):
 
-    def gdo_trigger(self) -> str:
+    @classmethod
+    def gdo_trigger(cls) -> str:
         return 'pm.next'
 
     def gdo_execute(self) -> GDT:

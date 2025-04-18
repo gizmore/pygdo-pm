@@ -15,7 +15,8 @@ from gdo.ui.GDT_Title import GDT_Title
 
 class send(MethodForm):
 
-    def gdo_trigger(self) -> str:
+    @classmethod
+    def gdo_trigger(cls) -> str:
         return 'pm.send'
 
     def gdo_user_type(self) -> str | None:
