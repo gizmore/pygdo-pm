@@ -1,4 +1,4 @@
-from gdo.base.Cache import gdo_cached, Cache
+from gdo.base.Cache import Cache
 from gdo.base.GDO import GDO
 from gdo.base.GDT import GDT
 from gdo.core.GDO_User import GDO_User
