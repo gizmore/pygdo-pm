@@ -14,7 +14,7 @@ class view(Method):
     def gdo_trigger(cls) -> str:
         return 'pm.read'
 
-    def gdo_parameters(self) -> [GDT]:
+    def gdo_parameters(self) -> list[GDT]:
         return [
             GDT_Object('id').table(GDO_PM.table()).not_null(),
             GDT_Validator().validator(None, 'id', self.validate_pm_owner),
