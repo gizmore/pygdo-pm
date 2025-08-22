@@ -13,6 +13,10 @@ from gdo.ui.GDT_Page import GDT_Page
 
 class module_pm(GDO_Module):
 
+    def __init__(self):
+        super().__init__()
+        self._priority = 30
+
     def gdo_friendencies(self):
         return [
             'gpg',
