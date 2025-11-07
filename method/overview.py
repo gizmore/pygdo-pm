@@ -12,7 +12,7 @@ class overview(Method):
         return 'member,guest,link'
 
     def gdo_execute(self) -> GDT:
-        cont = GDT_Container().add_field(
+        cont = GDT_Container().add_fields(
             compose().env_copy(self).args_copy(self),
             folders().env_copy(self).args_copy(self),
             folder().env_copy(self).args_copy(self)

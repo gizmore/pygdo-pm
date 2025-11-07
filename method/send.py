@@ -23,7 +23,7 @@ class send(MethodForm):
         return 'member,ghost'
 
     def gdo_create_form(self, form: GDT_Form) -> None:
-        form.add_field(
+        form.add_fields(
             GDT_User('to').not_null(),
             GDT_Title('title').not_null(),
         )

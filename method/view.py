@@ -37,5 +37,5 @@ class view(Method):
         card = GDT_Card().gdo(pm)
         card.title_raw(pm.render_title())
         card.get_footer().add_field(pm.column('pm_created'))
-        card.get_content().add_field(*pm.columns_only('pm_from', 'pm_to', 'pm_title', 'pm_message'))
+        card.get_content().add_fields(*pm.columns_only('pm_from', 'pm_to', 'pm_title', 'pm_message'))
         return card
