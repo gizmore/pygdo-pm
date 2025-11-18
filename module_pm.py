@@ -29,7 +29,7 @@ class module_pm(GDO_Module):
             GDO_PM,
         ]
 
-    def gdo_install(self):
+    async def gdo_install(self):
         GDO_PMFolder.blank({
             'pmf_id': '1',
             'pmf_name': 'InBox',
@@ -71,6 +71,6 @@ class module_pm(GDO_Module):
     def gdo_subscribe_events(self):
         Application.EVENTS.subscribe('user_created', self.on_user_created)
 
-    def on_user_created(self, user: GDO_User):
+    async def on_user_created(self, user: GDO_User):
         from gdo.pm.method.send import send
         send().send_pm(self.cfg_welcome_sender(), user, t('welcome_pm_title'), t('welcome_pm_body', (user.render_name(),)))
