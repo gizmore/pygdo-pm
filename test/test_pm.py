@@ -11,15 +11,15 @@ from gdotest.TestUtil import reinstall_module, cli_plug, GDOTestCase, web_plug, 
 class PMTest(GDOTestCase):
     peter: GDO_User
 
-    def setUp(self):
-        super().setUp()
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
         Application.init(os.path.dirname(__file__ + "/../../../../"))
         loader = ModuleLoader.instance()
         loader.load_modules_db(True)
         loader.init_modules(True, True)
         reinstall_module('pm')
         loader.init_cli()
-        self.peter = Web.get_server().get_or_create_user('Peter')
+        self.peter = await Web.get_server().get_or_create_user('Peter')
         self.peter._authenticated = True
         cli_gizmore()
         web_gizmore()
