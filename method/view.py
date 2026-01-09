@@ -1,11 +1,14 @@
+from gdo.avatar.GDT_Avatar import GDT_Avatar
 from gdo.base.GDT import GDT
 from gdo.base.Method import Method
 from gdo.core.GDT_Object import GDT_Object
+from gdo.core.GDT_String import GDT_String
 from gdo.date.Time import Time
 from gdo.form.GDT_Form import GDT_Form
 from gdo.form.GDT_Validator import GDT_Validator
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.ui.GDT_Card import GDT_Card
+from gdo.user.GDT_ProfileLink import GDT_ProfileLink
 
 
 class view(Method):
@@ -36,6 +39,10 @@ class view(Method):
             pm.save_val('pm_read', Time.get_date())
         card = GDT_Card().gdo(pm)
         card.title_raw(pm.render_title())
+        card.image(GDT_Avatar('avatar').for_user(self._env_user))
+        # card.get_header().add_field(GDT_ProfileLink().user(pm.get_other_user(self._env_user)))
+        card.get_header().add_fields(pm.column('pm_from'), GDT_String('btw').text('%s', ('->', )))
+        card.get_header().add_fields(*pm.columns_only('pm_to', 'pm_title'))
+        card.get_content().add_fields(pm.column('pm_message'))
         card.get_footer().add_field(pm.column('pm_created'))
-        card.get_content().add_fields(*pm.columns_only('pm_from', 'pm_to', 'pm_title', 'pm_message'))
         return card

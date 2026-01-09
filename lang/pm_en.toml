@@ -20,3 +20,9 @@ msg_pm_sent = "The PM to %s has been sent successfully."
 ###########
 welcome_pm_title = "Welcome!"
 welcome_pm_body = "Hello and welcome to %s.<br/><br/>"
+
+########
+# View #
+########
+mt_pm_view = "Read PM"
+md_pm_view = "Read a PM for this website."

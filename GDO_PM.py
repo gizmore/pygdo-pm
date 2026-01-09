@@ -14,6 +14,9 @@ from gdo.ui.GDT_Title import GDT_Title
 
 class GDO_PM(GDO):
 
+    def gdo_cached(self) -> bool:
+        return False
+
     def gdo_columns(self) -> list[GDT]:
         return [
             GDT_AutoInc('pm_id'),
@@ -28,19 +31,21 @@ class GDO_PM(GDO):
             GDT_Created('pm_created'),
         ]
 
-    def gdo_cached(self) -> bool:
-        return False
-
     def get_owner(self) -> GDO_User:
         return self.gdo_value('pm_owner')
 
     def render_title(self) -> str:
         return self.gdo_val('pm_title')
 
+    def get_other_user_key(self, user: GDO_User) -> str:
+        return 'pm_from' if user.get_id() == self.gdo_val('pm_to') else 'pm_to'
+
+    def get_other_user(self, user: GDO_User) -> GDO_User:
+        return self.gdo_value(self.get_other_user_key(user))
+
     @classmethod
     def unread_count(cls, user: GDO_User) -> int:
         if (cached := Cache.get('new_pm_count', user.get_id())) is not None:
             return cached
-        count = cls.table().count_where(f'pm_owner={user.get_id()} AND pm_read IS NULL')
+        count = cls.table().count_where(f'pm_owner={user.get_id()} AND pm_read IS NULL') or '0'
         return Cache.set('new_pm_count', user.get_id(), count)
-
