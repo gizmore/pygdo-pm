@@ -14,6 +14,10 @@ from gdo.ui.GDT_Title import GDT_Title
 
 class folder(MethodQueryTable):
 
+    @classmethod
+    def gdo_trigger(cls) -> str:
+        return 'pm.list'
+
     def gdo_table(self) -> GDO:
         return GDO_PM.table()
 
