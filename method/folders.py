@@ -8,6 +8,10 @@ from gdo.table.MethodQueryTable import MethodQueryTable
 
 class folders(MethodQueryTable):
 
+    @classmethod
+    def gdo_trigger(cls) -> str:
+        return ''
+
     def gdo_table(self) -> GDO:
         return GDO_PMFolder.table()
 

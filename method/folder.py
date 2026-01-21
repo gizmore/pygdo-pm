@@ -1,6 +1,9 @@
+from typing import Any
+
 from gdo.base.GDO import GDO
 from gdo.base.GDT import GDT
 from gdo.base.Query import Query
+from gdo.base.Render import Mode
 from gdo.base.util.href import href
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.GDT_PMFolder import GDT_PMFolder
@@ -10,9 +13,6 @@ from gdo.ui.GDT_Title import GDT_Title
 
 
 class folder(MethodQueryTable):
-
-    def gdo_paginate_size(self) -> int:
-        return 1
 
     def gdo_table(self) -> GDO:
         return GDO_PM.table()
@@ -32,3 +32,6 @@ class folder(MethodQueryTable):
 
     def render_pm_title(self, gdt: GDT_Title, gdo: GDO) -> str:
         return GDT_Link().text_raw(gdt.get_val()).href(href('pm', 'view', f'&id={gdo.get_id()}')).render()
+
+    def render_gdo(self, gdo: GDO, mode: Mode) -> Any:
+        return f'{gdo.get_id()}-{gdo.gdo_val('pm_title')}'

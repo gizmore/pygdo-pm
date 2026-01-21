@@ -8,6 +8,10 @@ from gdo.pm.method.folders import folders
 
 class overview(Method):
 
+    @classmethod
+    def gdo_trigger(cls) -> str:
+        return ''
+
     def gdo_user_type(self) -> str | None:
         return 'member,guest,link'
 

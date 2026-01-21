@@ -1,7 +1,7 @@
 from gdo.base.Application import Application
 from gdo.base.GDO_Module import GDO_Module
 from gdo.base.GDT import GDT
-from gdo.base.Trans import t
+from gdo.base.Trans import t, sitename
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_Bool import GDT_Bool
 from gdo.core.GDT_User import GDT_User
@@ -73,4 +73,4 @@ class module_pm(GDO_Module):
 
     async def on_user_created(self, user: GDO_User):
         from gdo.pm.method.send import send
-        send().send_pm(self.cfg_welcome_sender(), user, t('welcome_pm_title'), t('welcome_pm_body', (user.render_name(),)))
+        send().send_pm(self.cfg_welcome_sender(), user, t('welcome_pm_title'), t('welcome_pm_body', (user.render_name(), sitename())))
