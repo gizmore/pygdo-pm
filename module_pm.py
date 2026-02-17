@@ -9,6 +9,7 @@ from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.GDO_PMFolder import GDO_PMFolder
 from gdo.ui.GDT_Link import GDT_Link
 from gdo.ui.GDT_Page import GDT_Page
+from gdo.base.GDO import GDO
 
 
 class module_pm(GDO_Module):
@@ -23,7 +24,7 @@ class module_pm(GDO_Module):
             'mail',
         ]
 
-    def gdo_classes(self):
+    def gdo_classes(self) -> list[type[GDO]]:
         return [
             GDO_PMFolder,
             GDO_PM,
