@@ -2,6 +2,7 @@ module_pm = "PM"
 
 link_pm = "%s PMs"
 folder = "Folder"
+email_on_pm = "Email On PM"
 
 ############
 # Overview #
