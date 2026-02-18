@@ -1,6 +1,7 @@
 module_pm = "PM"
 
 link_pm = "%s PMs"
+folder = "Folder"
 
 ############
 # Overview #

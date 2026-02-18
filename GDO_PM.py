@@ -20,10 +20,10 @@ class GDO_PM(GDO):
     def gdo_columns(self) -> list[GDT]:
         return [
             GDT_AutoInc('pm_id'),
-            GDT_PMFolder('pm_folder').not_null().cascade_delete(),
-            GDT_User('pm_from').not_null(),
-            GDT_User('pm_to').not_null().cascade_delete(),
-            GDT_User('pm_owner').not_null().cascade_delete(),
+            GDT_PMFolder('pm_folder').label('folder').not_null().cascade_delete(),
+            GDT_User('pm_from').label('from').not_null(),
+            GDT_User('pm_to').label('to').not_null().cascade_delete(),
+            GDT_User('pm_owner').label('owner').not_null().cascade_delete(),
             GDT_Title('pm_title').not_null(),
             GDT_Message('pm_message').not_null(),
             GDT_Bool('pm_encrypted').not_null(),
