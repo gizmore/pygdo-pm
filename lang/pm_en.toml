@@ -21,7 +21,7 @@ msg_pm_sent = "The PM to %s has been sent successfully."
 # Welcome #
 ###########
 welcome_pm_title = "Welcome!"
-welcome_pm_body = "Hello %s<br/>Welcome to %s.<br/><br/>"
+welcome_pm_body = "Hello %s<br>Welcome to %s.<br><br>"
 
 ########
 # View #
