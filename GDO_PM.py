@@ -44,8 +44,9 @@ class GDO_PM(GDO):
         return self.gdo_value(self.get_other_user_key(user))
 
     @classmethod
-    def unread_count(cls, user: GDO_User) -> int:
+    def unread_count(cls, user: GDO_User) -> str:
         if (cached := Cache.get('new_pm_count', user.get_id())) is not None:
             return cached
         count = str(cls.table().count_where(f'pm_owner={user.get_id()} AND pm_read IS NULL')) or '0'
-        return Cache.set('new_pm_count', user.get_id(), count)
+        Cache.set('new_pm_count', user.get_id(), count)
+        return count
