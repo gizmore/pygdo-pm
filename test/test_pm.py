@@ -51,21 +51,21 @@ class PMTest(GDOTestCase):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
-    def test_05_pm_overview_web(self):
+    async def test_05_pm_overview_web(self):
         out = cli_plug(self.peter, '$pm.send gizmore{2} "Hi There" Message Body')
         self.assertIn('has been sent', out, 'Message sending does not work.')
 
     def test_06_pm_overview(self):
         WebPlug.COOKIES = {}
         out = web_plug("pm.overview.html").exec()
-        self.assertIn('Only members are allowed', out, "PM Center is not restricted to authenticated users.")
+        self.assertIn('execute this method', out, "PM Center is not restricted to authenticated users.")
 
     def test_07_pm_overview_ok(self):
         out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
     def test_08_pm_settings(self):
-        out = web_plug('account.settings.html?_lang=en&module=pm').user('gizmore').post({'exmail_on_pm': '1', 'submit_xpm': '1'}).exec()
+        out = web_plug('account.settings.html?_lang=en&module=pm').user('gizmore').post({'email_on_pm': '1', 'submit_pm': '1'}).exec()
         set = web_gizmore().get_setting_val('email_on_pm')
         self.assertEqual('1', set, 'Cannot set PM setting')
 

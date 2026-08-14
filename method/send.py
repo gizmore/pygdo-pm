@@ -45,7 +45,7 @@ class send(MethodForm):
         self.create_pm(sender, target, title, message, sender, True)
         pm = self.create_pm(sender, target, title, message, target, False)
         Cache.remove('new_pm_count', target.get_id())
-        if module_pm.instance().cfg_welcome_pm():
+        if module_pm.instance().cfg_email_on_pm():
             self.send_email(pm)
 
     def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str, owner: GDO_User, mark_read: bool):
