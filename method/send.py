@@ -1,4 +1,3 @@
-from gdo.base.Cache import Cache
 from gdo.base.GDT import GDT
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_RestOfText import GDT_RestOfText
@@ -8,8 +7,8 @@ from gdo.form.GDT_Form import GDT_Form
 from gdo.form.MethodForm import MethodForm
 from gdo.mail.Mail import Mail
 from gdo.message.GDT_Message import GDT_Message
-from gdo.pm.module_pm import module_pm
 from gdo.pm.GDO_PM import GDO_PM
+from gdo.pm.module_pm import module_pm
 from gdo.ui.GDT_Title import GDT_Title
 
 
@@ -44,8 +43,8 @@ class send(MethodForm):
     def send_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str):
         self.create_pm(sender, target, title, message, sender, True)
         pm = self.create_pm(sender, target, title, message, target, False)
-        Cache.remove('new_pm_count', target.get_id())
-        if module_pm.instance().cfg_email_on_pm():
+        GDO_PM.clear_unread_count(target)
+        if module_pm.instance().cfg_email_on_pm() and target.get_setting_val('email_on_pm') == '1':
             self.send_email(pm)
 
     def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str, owner: GDO_User, mark_read: bool):
@@ -66,6 +65,14 @@ class send(MethodForm):
     def get_encrypted(self, user: GDO_User) -> str:
         return '0'
 
-    def send_email(self, pm: GDO_PM):
+    def send_email(self, pm: GDO_PM) -> bool:
+        target = pm.get_owner()
+        if not target.get_mail():
+            return False
+        sender = pm.gdo_value('pm_from')
         mail = Mail.from_bot()
-
+        if sender_mail := sender.get_mail():
+            mail.reply_to(sender_mail, sender.get_displayname())
+        mail.subject(pm.render_title())
+        mail.body(pm.column('pm_message').render_card())
+        return mail.send_to_user(target)

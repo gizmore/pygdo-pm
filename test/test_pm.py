@@ -5,6 +5,7 @@ from gdo.base.Application import Application
 from gdo.base.ModuleLoader import ModuleLoader
 from gdo.core.GDO_User import GDO_User
 from gdo.core.connector.Web import Web
+from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.module_pm import module_pm
 from gdotest.TestUtil import reinstall_module, cli_plug, GDOTestCase, web_plug, WebPlug, cli_gizmore, web_gizmore, install_module
 
@@ -41,18 +42,22 @@ class PMTest(GDOTestCase):
         self.assertIn('Too many results', result, 'Message field does not show ambiguous error in pm.send error.')
 
     def test_03_send_pm_from_peter_to_gizmore(self):
-        result = cli_plug(self.peter, '$pm.send gizmore{1} "Hi There" <b>Message<i>Body</i></b>')
+        target = web_gizmore()
+        result = cli_plug(self.peter, f'$pm.send {target.get_id()} "Hi There" <b>Message<i>Body</i></b>')
         self.assertIn('has been sent', result, 'Message sending does not work.')
+        self.assertEqual('1', GDO_PM.unread_count(cli_gizmore()))
         result = cli_plug(cli_gizmore(), "$pm.next")
         self.assertIn('Hi There', result, "PM Reading does not work")
         self.assertIn('\x1b[1mMessage\x1b[3mBody\x1b[0m\x1b[0m', result, "PM Reading does not work #2")
+        self.assertEqual('0', GDO_PM.unread_count(cli_gizmore()))
 
     def test_04_folders(self):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
     async def test_05_pm_overview_web(self):
-        out = cli_plug(self.peter, '$pm.send gizmore{2} "Hi There" Message Body')
+        target = web_gizmore()
+        out = cli_plug(self.peter, f'$pm.send {target.get_id()} "Hi There" Message Body')
         self.assertIn('has been sent', out, 'Message sending does not work.')
 
     def test_06_pm_overview(self):
@@ -62,6 +67,7 @@ class PMTest(GDOTestCase):
 
     def test_07_pm_overview_ok(self):
         out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()
+        self.assertIn("Compose PM", out, "PM overview does not link to the compose form.")
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
     def test_08_pm_settings(self):

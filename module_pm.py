@@ -1,6 +1,7 @@
-from gdo.base.Application import Application
-from gdo.base.GDO_Module import GDO_Module
 from gdo.base.GDT import GDT
+from gdo.base.GDO import GDO
+from gdo.base.GDO_Module import GDO_Module
+from gdo.base.Application import Application
 from gdo.base.Trans import t, sitename
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_Bool import GDT_Bool
@@ -9,7 +10,6 @@ from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.GDO_PMFolder import GDO_PMFolder
 from gdo.ui.GDT_Link import GDT_Link
 from gdo.ui.GDT_Page import GDT_Page
-from gdo.base.GDO import GDO
 
 
 class module_pm(GDO_Module):

@@ -50,3 +50,7 @@ class GDO_PM(GDO):
         count = str(cls.table().count_where(f'pm_owner={user.get_id()} AND pm_read IS NULL')) or '0'
         Cache.set('new_pm_count', user.get_id(), count)
         return count
+
+    @classmethod
+    def clear_unread_count(cls, user: GDO_User) -> None:
+        Cache.remove('new_pm_count', user.get_id())
