@@ -12,6 +12,7 @@ from gdotest.TestUtil import reinstall_module, cli_plug, GDOTestCase, web_plug, 
 
 class PMTest(GDOTestCase):
     peter: GDO_User
+    other: GDO_User
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -23,6 +24,8 @@ class PMTest(GDOTestCase):
         loader.init_cli()
         self.peter = await Web.get_server().get_or_create_user('Peter')
         self.peter._authenticated = True
+        self.other = await Web.get_server().get_or_create_user('SearchOther')
+        self.other._authenticated = True
         cli_gizmore()
         web_gizmore()
 
@@ -55,22 +58,38 @@ class PMTest(GDOTestCase):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
-    async def test_05_pm_overview_web(self):
+    def test_05_searches_object_sender_name_in_folder(self):
+        target = web_gizmore()
+        hit = cli_plug(self.peter, f'$pm.send {target.get_id()} "Sender Search Hit" Match')
+        miss = cli_plug(self.other, f'$pm.send {target.get_id()} "Sender Search Miss" Ignore')
+        self.assertIn('has been sent', hit)
+        self.assertIn('has been sent', miss)
+
+        out = web_plug('pm.list.html?_lang=en&folder=1&s=Peter').user('gizmore').exec()
+        self.assertIn('Sender Search Hit', out)
+        self.assertNotIn('Sender Search Miss', out)
+
+        sent = cli_plug(target, f'$pm.send {self.peter.get_id()} "Recipient Search Hit" Match')
+        self.assertIn('has been sent', sent)
+        out = web_plug('pm.list.html?_lang=en&folder=2&s=Peter').user('gizmore').exec()
+        self.assertIn('Recipient Search Hit', out)
+
+    async def test_06_pm_overview_web(self):
         target = web_gizmore()
         out = cli_plug(self.peter, f'$pm.send {target.get_id()} "Hi There" Message Body')
         self.assertIn('has been sent', out, 'Message sending does not work.')
 
-    def test_06_pm_overview(self):
+    def test_07_pm_overview(self):
         WebPlug.COOKIES = {}
         out = web_plug("pm.overview.html").exec()
         self.assertIn('execute this method', out, "PM Center is not restricted to authenticated users.")
 
-    def test_07_pm_overview_ok(self):
+    def test_08_pm_overview_ok(self):
         out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()
         self.assertIn("Compose PM", out, "PM overview does not link to the compose form.")
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
 
-    def test_08_pm_settings(self):
+    def test_09_pm_settings(self):
         out = web_plug('account.settings.html?_lang=en&module=pm').user('gizmore').post({'email_on_pm': '1', 'submit_pm': '1'}).exec()
         set = web_gizmore().get_setting_val('email_on_pm')
         self.assertEqual('1', set, 'Cannot set PM setting')
