@@ -79,5 +79,5 @@ class module_pm(GDO_Module):
 
     def on_user_profile_links(self, user: GDO_User, links):
         viewer = GDO_User.current()
-        if viewer.is_member() and viewer.get_id() != user.get_id():
-            links.add_field(GDT_Link().href(self.href('send', f'&to={user.get_id()}')).text('link_pm_compose'))
+        if viewer.is_member():
+            links.add_field(GDT_Link().href(self.href('send', f'&to={user.get_id()}')).icon('edit').text('link_pm_compose'))
