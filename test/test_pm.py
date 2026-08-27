@@ -1,5 +1,6 @@
 import os
 import unittest
+from uuid import uuid4
 
 from gdo.base.Application import Application
 from gdo.base.ModuleLoader import ModuleLoader
@@ -69,6 +70,17 @@ class PMTest(GDOTestCase):
         })
         self.assertIsNotNone(pm)
         self.assertEqual('Web message body', pm.gdo_val('pm_message_input'))
+
+    def test_03c_send_pm_to_self_uses_inbox_and_sentbox(self):
+        user = web_gizmore()
+        title = f'Self PM {uuid4().hex}'
+        result = cli_plug(user, f'$pm.send {user.get_id()} "{title}" Body')
+        self.assertIn('has been sent', result)
+        rows = GDO_PM.table().all(
+            f"pm_owner={user.get_id()} AND pm_title='{title}'"
+        )
+        self.assertEqual(2, len(rows))
+        self.assertEqual({'1', '2'}, {pm.gdo_val('pm_folder') for pm in rows})
 
     def test_04_folders(self):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()

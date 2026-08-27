@@ -52,7 +52,9 @@ class send(MethodForm):
 
     def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str, owner: GDO_User, mark_read: bool):
         return GDO_PM.blank({
-            'pm_folder': '1' if target == owner else '2',
+            # A PM to oneself has identical sender and recipient. The sender
+            # copy is nevertheless the sent copy and belongs in SentBox.
+            'pm_folder': '2' if mark_read else '1',
             'pm_from': sender.get_id(),
             'pm_to': target.get_id(),
             'pm_owner': owner.get_id(),
