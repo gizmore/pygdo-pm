@@ -35,7 +35,7 @@ class folder(MethodQueryTable):
         return super().gdo_table_query().where(f'pm_owner={user.get_id()} AND pm_folder={fid}')
 
     def render_pm_title(self, gdt: GDT_Title, gdo: GDO) -> str:
-        return GDT_Link().text_raw(gdt.get_val()).href(href('pm', 'view', f'&id={gdo.get_id()}')).render()
+        return GDT_Link().text_raw(gdt.get_val()).href(href('pm', 'view', f'&id={gdo.get_id()}')).icon(None).render()
 
     def render_gdo(self, gdo: GDO, mode: Mode) -> Any:
         return f'{gdo.get_id()}-{gdo.gdo_val('pm_title')}'
