@@ -95,6 +95,20 @@ class PMTest(GDOTestCase):
         set = web_gizmore().get_setting_val('email_on_pm')
         self.assertEqual('1', set, 'Cannot set PM setting')
 
+    def test_10_profile_message_links(self):
+        from gdo.mail.module_mail import module_mail
+
+        target = web_gizmore()
+        module_mail.instance().set_email_for(target, 'gizmore@example.test')
+        out = web_plug(f'user.profile.for.{target.get_id()}.html?_lang=en').user('Peter').exec()
+        self.assertIn(f'pm.send.to.{target.get_id()}.html', out)
+        self.assertIn(f'mail.send.to.{target.get_id()}.html', out)
+
+        pm_form = web_plug(f'pm.send.to.{target.get_id()}.html?_lang=en').user('Peter').exec()
+        self.assertIn('Send PM', pm_form)
+        mail_form = web_plug(f'mail.send.to.{target.get_id()}.html?_lang=en').user('Peter').exec()
+        self.assertIn('Send Email', mail_form)
+
 
 if __name__ == '__main__':
     unittest.main()
