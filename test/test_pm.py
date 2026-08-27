@@ -54,6 +54,22 @@ class PMTest(GDOTestCase):
         self.assertIn('\x1b[1mMessage\x1b[3mBody\x1b[0m\x1b[0m', result, "PM Reading does not work #2")
         self.assertEqual('0', GDO_PM.unread_count(cli_gizmore()))
 
+    def test_03b_send_pm_from_web_form(self):
+        target = web_gizmore()
+        out = web_plug('pm.send.html?_lang=en').user('Peter').post({
+            'to': target.get_id(),
+            'title': 'Web PM',
+            'message_input': 'Web message body',
+            'submit': 'Submit',
+        }).exec()
+        self.assertIn('has been sent', out)
+        pm = GDO_PM.table().get_by_vals({
+            'pm_owner': target.get_id(),
+            'pm_title': 'Web PM',
+        })
+        self.assertIsNotNone(pm)
+        self.assertEqual('Web message body', pm.gdo_val('pm_message_input'))
+
     def test_04_folders(self):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")

@@ -23,7 +23,7 @@ class send(MethodForm):
 
     def gdo_create_form(self, form: GDT_Form) -> None:
         form.add_fields(
-            GDT_User('to').not_null(),
+            GDT_User('to').not_null().with_completion(),
             GDT_Title('title').not_null(),
         )
         if self._env_http:
@@ -36,7 +36,10 @@ class send(MethodForm):
         sender = self._env_user
         target = self.param_value('to') # type: GDO_User
         title = self.param_value('title')
-        message = self.param_value('message')
+        # GDT_Message stores the editable text in its ``*_input`` component.
+        # CLI uses GDT_RestOfText directly, while the web form uses the
+        # composite field and therefore has to read the component value.
+        message = self.param_value('message_input') if self._env_http else self.param_value('message')
         self.send_pm(sender, target, title, message)
         return self.reply('msg_pm_sent', (target.render_name(),))
 
