@@ -6,6 +6,7 @@ from gdo.base.Application import Application
 from gdo.base.ModuleLoader import ModuleLoader
 from gdo.core.GDO_User import GDO_User
 from gdo.core.connector.Web import Web
+from gdo.base.util.href import href
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.module_pm import module_pm
 from gdotest.TestUtil import reinstall_module, cli_plug, GDOTestCase, web_plug, WebPlug, cli_gizmore, web_gizmore, install_module
@@ -54,6 +55,20 @@ class PMTest(GDOTestCase):
         self.assertIn('Hi There', result, "PM Reading does not work")
         self.assertIn('\x1b[1mMessage\x1b[3mBody\x1b[0m\x1b[0m', result, "PM Reading does not work #2")
         self.assertEqual('0', GDO_PM.unread_count(cli_gizmore()))
+
+    def test_pm_participants_render_as_profile_links(self):
+        pm = GDO_PM.blank({
+            'pm_from': self.peter.get_id(),
+            'pm_to': web_gizmore().get_id(),
+        })
+        rendered = pm.column('pm_from').render_cell()
+        self.assertIn(
+            href('user', 'profile', f'&for={self.peter.get_id()}-{self.peter.get_name_sid()}'),
+            rendered)
+        self.assertIn('title="Level: ', rendered)
+        self.assertIn(' | Score: ', rendered)
+        self.assertLess(rendered.index('<a '), rendered.index('<img '))
+        self.assertLess(rendered.index('<img '), rendered.index('</a>'))
 
     def test_03b_send_pm_from_web_form(self):
         target = web_gizmore()

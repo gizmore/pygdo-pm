@@ -1,6 +1,7 @@
 from gdo.base.Cache import Cache
 from gdo.base.GDO import GDO
 from gdo.base.GDT import GDT
+from gdo.base.Util import module_enabled
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_AutoInc import GDT_AutoInc
 from gdo.core.GDT_Bool import GDT_Bool
@@ -10,6 +11,22 @@ from gdo.date.GDT_Timestamp import GDT_Timestamp
 from gdo.message.GDT_Message import GDT_Message
 from gdo.pm.GDT_PMFolder import GDT_PMFolder
 from gdo.ui.GDT_Title import GDT_Title
+from gdo.user.GDT_ProfileLink import GDT_ProfileLink
+
+
+class GDT_PMUser(GDT_User):
+    """A PM participant is always a navigable profile reference."""
+
+    def render_html(self) -> str:
+        if user := self.get_gdo():
+            link = GDT_ProfileLink().user(user)
+            if module_enabled('avatar'):
+                link.with_avatar()
+            return link.render()
+        return super().render_html()
+
+    def render_cell(self) -> str:
+        return self.render_html()
 
 
 class GDO_PM(GDO):
@@ -21,8 +38,8 @@ class GDO_PM(GDO):
         return [
             GDT_AutoInc('pm_id'),
             GDT_PMFolder('pm_folder').label('folder').not_null().cascade_delete(),
-            GDT_User('pm_from').label('from').not_null(),
-            GDT_User('pm_to').label('to').not_null().cascade_delete(),
+            GDT_PMUser('pm_from').label('from').not_null(),
+            GDT_PMUser('pm_to').label('to').not_null().cascade_delete(),
             GDT_User('pm_owner').label('owner').not_null().cascade_delete(),
             GDT_Title('pm_title').not_null(),
             GDT_Message('pm_message').not_null(),
