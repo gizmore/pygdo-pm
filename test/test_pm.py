@@ -57,6 +57,7 @@ class PMTest(GDOTestCase):
     def test_04_folders(self):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
         self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
+        self.assertIn("pm.overview.folder.1.html", out, "PM folder names do not link to the overview folder view.")
 
     def test_05_searches_object_sender_name_in_folder(self):
         target = web_gizmore()

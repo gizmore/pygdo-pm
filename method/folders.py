@@ -4,6 +4,8 @@ from gdo.base.Query import Query
 from gdo.core.GDT_UInt import GDT_UInt
 from gdo.pm.GDO_PMFolder import GDO_PMFolder
 from gdo.table.MethodQueryTable import MethodQueryTable
+from gdo.ui.GDT_Link import GDT_Link
+from gdo.base.util.href import href
 
 
 class folders(MethodQueryTable):
@@ -33,6 +35,11 @@ class folders(MethodQueryTable):
             t.column('pmf_name'),
             GDT_UInt('pmf_count').label('count'),
         ]
+
+    def render_pmf_name(self, gdt: GDT, gdo: GDO) -> str:
+        return GDT_Link().text_raw(gdt.get_val()).href(
+            href('pm', 'overview', f'&folder={gdo.get_id()}')
+        ).render()
 
     def gdo_table_query(self) -> Query:
         uid = self._env_user.get_id()
