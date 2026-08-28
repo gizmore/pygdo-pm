@@ -37,7 +37,7 @@ class folders(MethodQueryTable):
         ]
 
     def render_pmf_name(self, gdt: GDT, gdo: GDO) -> str:
-        return GDT_Link().text_raw(gdt.get_val()).href(
+        return GDT_Link().text_raw(gdt.get_val()).icon('folder').href(
             href('pm', 'overview', f'&folder={gdo.get_id()}')
         ).render()
 
