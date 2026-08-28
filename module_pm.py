@@ -67,7 +67,7 @@ class module_pm(GDO_Module):
     def gdo_init_sidebar(self, page: 'GDT_Page'):
         user = GDO_User.current()
         if user.is_authenticated():
-            page._right_bar.add_field(GDT_Link().href(self.href('overview')).text('link_pm', (GDO_PM.unread_count(user),)))
+            page._right_bar.add_field(GDT_Link().icon('message').href(self.href('overview')).text('link_pm', (GDO_PM.unread_count(user),)))
 
     def gdo_subscribe_events(self):
         Application.EVENTS.subscribe('user_created', self.on_user_created)
