@@ -74,6 +74,8 @@ class module_pm(GDO_Module):
         Application.EVENTS.subscribe('user_profile_links', self.on_user_profile_links)
 
     async def on_user_created(self, user: GDO_User):
+        if not self.cfg_welcome_pm():
+            return
         from gdo.pm.method.send import send
         send().send_pm(self.cfg_welcome_sender(), user, t('welcome_pm_title'), t('welcome_pm_body', (user.render_name(), sitename())))
 

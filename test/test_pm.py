@@ -1,6 +1,7 @@
 import os
 import unittest
 from uuid import uuid4
+from unittest.mock import MagicMock, patch
 
 from gdo.base.Application import Application
 from gdo.base.ModuleLoader import ModuleLoader
@@ -151,6 +152,23 @@ class PMTest(GDOTestCase):
         self.assertIn('Send PM', pm_form)
         mail_form = web_plug(f'mail.send.to.{target.get_id()}.html?_lang=en').user('Peter').exec()
         self.assertIn('Send Email', mail_form)
+
+    async def test_welcome_pm_respects_the_module_setting(self):
+        module = module_pm.instance()
+        module.cfg_welcome_pm = MagicMock(return_value=False)
+        with patch('gdo.pm.method.send.send.send_pm') as send_pm:
+            await module.on_user_created(self.peter)
+        send_pm.assert_not_called()
+
+        module.cfg_welcome_pm.return_value = True
+        module.cfg_welcome_sender = MagicMock(return_value=web_gizmore())
+        with (
+            patch('gdo.pm.method.send.send.send_pm') as send_pm,
+            patch('gdo.pm.module_pm.t', side_effect=('Welcome', 'Hello %s')),
+            patch('gdo.pm.module_pm.sitename', return_value='PyGDO'),
+        ):
+            await module.on_user_created(self.peter)
+        send_pm.assert_called_once()
 
 
 if __name__ == '__main__':
