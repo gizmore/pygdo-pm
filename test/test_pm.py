@@ -118,6 +118,7 @@ class PMTest(GDOTestCase):
     def test_04_folders(self):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
         self.assertIn("pm.overview.folder.1.html", out, "PM folder names do not link to the overview folder view.")
+        self.assertIn('class="shrink table table-striped table-bordered"', out)
 
     def test_folder_renders_shrink_participant_cells(self):
         out = web_plug("pm.list.html?_lang=en&folder=1").user("gizmore").exec()

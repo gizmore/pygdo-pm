@@ -34,6 +34,9 @@ class folders(MethodQueryTable):
         form.slim()
         super().gdo_create_form(form)
 
+    def gdo_create_table(self, table) -> None:
+        table.add_class('shrink')
+
     def gdo_table_headers(self) -> list[GDT]:
         t = self.gdo_table()
         return [
