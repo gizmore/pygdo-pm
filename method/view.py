@@ -18,14 +18,18 @@ class view(Method):
 
     def gdo_parameters(self) -> list[GDT]:
         return [
-            GDT_Object('id').table(GDO_PM.table()).not_null(),
+            GDT_Object('id').table(GDO_PM.table()).positional(),
         ]
 
-    def get_pm(self) -> GDO_PM:
+    def get_pm(self) -> GDO_PM | None:
         return self.param_value('id')
 
     def gdo_execute(self) -> GDT:
         pm = self.get_pm()
+        if pm is None:
+            pm = self.get_unread_pm()
+            if pm is None:
+                return self.msg('msg_no_more_new_pm')
         if pm.get_owner() != self._env_user:
             return self.err('err_permission', (t('owner'),))
         if pm.gdo_val('pm_read') is None:
@@ -40,3 +44,8 @@ class view(Method):
         card.get_content().add_fields(pm.column('pm_message'))
         card.get_footer().add_field(pm.column('pm_created'))
         return card
+
+    def get_unread_pm(self) -> GDO_PM | None:
+        return (GDO_PM.table().select().where(
+            f"pm_owner={self._env_user.get_id()} AND pm_read IS NULL"
+        ).first().order('pm_created ASC').exec().fetch_object())

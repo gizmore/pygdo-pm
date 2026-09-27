@@ -31,11 +31,14 @@ mt_pm_view = "Read PM"
 md_pm_view = "Read a PM for this website."
 
 ########
-# Next #
+# Read #
 ########
-mt_pm_next = "Next Unread PM"
-md_pm_next = "Read the next unread pm and mark it read."
+mt_pm_read = "Read PM"
+md_pm_next = "Read a PM or the next unread pm and mark it read."
 msg_no_more_new_pm = "There are no unread pm for you."
 
+##########
+# Folder #
+##########
 mt_pm_folder = "PM Folder"
 md_pm_folder = "Show a PM Folder like inbox(1) and outbox(2)"

@@ -147,6 +147,19 @@ class PMTest(GDOTestCase):
     def test_folder_orders_newest_private_messages_first(self):
         self.assertEqual('pm_created DESC', folder().gdo_order_default())
 
+    def test_pm_read_without_id_selects_the_oldest_unread_message(self):
+        from gdo.pm.method.view import view
+
+        method = view().env_user(self.peter)
+        query = MagicMock()
+        with patch.object(GDO_PM, 'table') as table:
+            table.return_value.select.return_value.where.return_value.first.return_value.order.return_value = query
+            method.get_unread_pm()
+        table.return_value.select.return_value.where.assert_called_once_with(
+            f'pm_owner={self.peter.get_id()} AND pm_read IS NULL'
+        )
+        query.exec.assert_called_once()
+
     def test_folders_do_not_render_table_headers(self):
         self.assertFalse(folders().gdo_render_table_headers())
 
