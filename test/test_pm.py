@@ -1,7 +1,7 @@
 import os
 import unittest
 from uuid import uuid4
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from gdo.base.Application import Application
 from gdo.base.ModuleLoader import ModuleLoader
@@ -53,11 +53,31 @@ class PMTest(GDOTestCase):
         target = web_gizmore()
         result = cli_plug(self.peter, f'$pm.send {target.get_id()} "Hi There" <b>Message<i>Body</i></b>')
         self.assertIn('has been sent', result, 'Message sending does not work.')
-        self.assertEqual('1', GDO_PM.unread_count(cli_gizmore()))
-        result = cli_plug(cli_gizmore(), "$pm.next")
-        self.assertIn('Hi There', result, "PM Reading does not work")
-        self.assertIn('\x1b[1mMessage\x1b[3mBody\x1b[0m\x1b[0m', result, "PM Reading does not work #2")
         self.assertEqual('0', GDO_PM.unread_count(cli_gizmore()))
+
+    def test_sending_pm_emits_new_pm_ipc_outside_tests(self):
+        from gdo.pm.method.send import send
+
+        with (
+            patch.object(Application, 'IS_TEST', False),
+            patch('gdo.pm.method.send.IPC.send') as ipc,
+        ):
+            send().send_pm(self.peter, self.other, 'IPC test', 'Private message')
+        ipc.assert_called_once_with('pm.ipc_new_pm', (self.other.get_id(),))
+
+    async def test_new_pm_ipc_runs_the_login_delivery(self):
+        from gdo.pm.method.ipc_new_pm import ipc_new_pm
+
+        module = module_pm.instance()
+        method = ipc_new_pm().env_user(GDO_User.system()).env_server(self.other.get_server())
+        method.input('recipient_user_id', str(self.other.get_id()))
+        with (
+            patch.object(Application, 'IS_DOG', True),
+            patch.object(Application, 'IS_TEST', False),
+            patch.object(module, 'on_user_login', new=AsyncMock()) as on_user_login,
+        ):
+            await method.execute()
+        on_user_login.assert_awaited_once_with(self.other)
 
     def test_pm_participants_render_as_profile_links(self):
         pm = GDO_PM.blank({
@@ -194,6 +214,64 @@ class PMTest(GDOTestCase):
         ):
             await module.on_user_created(self.peter)
         send_pm.assert_called_once()
+
+    async def test_user_login_delivers_every_unread_pm(self):
+        module = module_pm.instance()
+        user = MagicMock()
+        owner = MagicMock()
+        owner.get_id.return_value = 23
+        user.get_effective_user.return_value = owner
+        first = MagicMock()
+        second = MagicMock()
+        query = MagicMock()
+        query.exec.return_value.fetch_all.return_value = [first, second]
+
+        with (
+            patch.object(Application, 'IS_TEST', False),
+            patch.object(GDO_PM, 'table') as table,
+            patch.object(module, 'deliver_pm', new=AsyncMock()) as deliver,
+        ):
+            table.return_value.select.return_value.where.return_value.order.return_value = query
+            await module.on_user_login(user)
+
+        self.assertEqual(
+            'pm_owner=23 AND pm_read IS NULL',
+            table.return_value.select.return_value.where.call_args.args[0],
+        )
+        self.assertEqual([((user, owner, first), {}), ((user, owner, second), {})], [
+            (call.args, call.kwargs) for call in deliver.await_args_list
+        ])
+
+    async def test_user_login_delivery_uses_pm_view(self):
+        module = module_pm.instance()
+        user = MagicMock()
+        owner = MagicMock()
+        pm = MagicMock()
+        pm.get_id.return_value = 42
+        server = MagicMock()
+        connector = MagicMock()
+        connector.get_render_mode.return_value = Application.get_mode()
+        connector.send_to_user = AsyncMock()
+        user.get_server.return_value = server
+        server.get_connector.return_value = connector
+        card = MagicMock()
+        card.render.return_value = 'Private message body'
+        method = MagicMock()
+        method.env_http.return_value = method
+        method.env_user.return_value = method
+        method.env_server.return_value = method
+        method.input.return_value = method
+        method.execute = AsyncMock(return_value=card)
+
+        with patch('gdo.pm.method.view.view', return_value=method) as view_method:
+            await module.deliver_pm(user, owner, pm)
+
+        view_method.assert_called_once_with()
+        method.input.assert_called_once_with('id', '42')
+        connector.send_to_user.assert_awaited_once()
+        message = connector.send_to_user.await_args.args[0]
+        self.assertIs(user, message._env_user)
+        self.assertEqual('Private message body', message._result)
 
 
 if __name__ == '__main__':

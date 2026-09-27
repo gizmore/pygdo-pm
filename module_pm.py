@@ -2,6 +2,7 @@ from gdo.base.GDT import GDT
 from gdo.base.GDO import GDO
 from gdo.base.GDO_Module import GDO_Module
 from gdo.base.Application import Application
+from gdo.base.Message import Message
 from gdo.base.Trans import t, sitename
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_Bool import GDT_Bool
@@ -71,6 +72,7 @@ class module_pm(GDO_Module):
 
     def gdo_subscribe_events(self):
         Application.EVENTS.subscribe('user_created', self.on_user_created)
+        Application.EVENTS.subscribe('user_login', self.on_user_login)
         Application.EVENTS.subscribe('user_profile_links', self.on_user_profile_links)
 
     async def on_user_created(self, user: GDO_User):
@@ -78,6 +80,29 @@ class module_pm(GDO_Module):
             return
         from gdo.pm.method.send import send
         send().send_pm(self.cfg_welcome_sender(), user, t('welcome_pm_title'), t('welcome_pm_body', (user.render_name(), sitename())))
+
+    async def on_user_login(self, user: GDO_User):
+        """Deliver unread PMs privately through the connector account that logged in."""
+        # Unit tests have no connector event loop to receive the delivery.
+        if Application.is_unit_test():
+            return
+        owner = user.get_effective_user()
+        unread = (GDO_PM.table().select().where(
+            f'pm_owner={owner.get_id()} AND pm_read IS NULL'
+        ).order('pm_created ASC').exec().fetch_all())
+        for pm in unread:
+            await self.deliver_pm(user, owner, pm)
+
+    async def deliver_pm(self, user: GDO_User, owner: GDO_User, pm: GDO_PM):
+        """Render and mark a PM through ``pm.view``, then send it privately."""
+        from gdo.pm.method.view import view
+
+        server = user.get_server()
+        method = view().env_http(False).env_user(owner).env_server(server)
+        card = await method.input('id', str(pm.get_id())).execute()
+        mode = server.get_connector().get_render_mode()
+        message = Message('', mode).env_user(user).env_server(server).result(card.render(mode))
+        await server.get_connector().send_to_user(message)
 
     def on_user_profile_links(self, user: GDO_User, links):
         viewer = GDO_User.current()

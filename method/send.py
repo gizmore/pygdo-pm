@@ -1,4 +1,6 @@
+from gdo.base.Application import Application
 from gdo.base.GDT import GDT
+from gdo.base.IPC import IPC
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_RestOfText import GDT_RestOfText
 from gdo.core.GDT_User import GDT_User
@@ -47,6 +49,10 @@ class send(MethodForm):
         self.create_pm(sender, target, title, message, sender, True)
         pm = self.create_pm(sender, target, title, message, target, False)
         GDO_PM.clear_unread_count(target)
+        # Unit tests do not run a Dog event loop. Production sends the IPC so
+        # the receiving connector can render the message through pm.view.
+        if not Application.IS_TEST:
+            IPC.send('pm.ipc_new_pm', (target.get_id(),))
         if module_pm.instance().cfg_email_on_pm() and target.get_setting_val('email_on_pm') == '1':
             self.send_email(pm)
 
