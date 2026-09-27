@@ -146,7 +146,8 @@ class PMTest(GDOTestCase):
     def test_08_pm_overview_ok(self):
         out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()
         self.assertIn("Compose PM", out, "PM overview does not link to the compose form.")
-        self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
+        self.assertIn('aria-label="create Icon"', out, "PM overview compose link has no create icon.")
+        self.assertNotIn("order_pmf_count", out, "PM folder table should not render headers.")
 
     def test_09_pm_settings(self):
         out = web_plug('account.settings.html?_lang=en&module=pm').user('gizmore').post({'email_on_pm': '1', 'submit_pm': '1'}).exec()

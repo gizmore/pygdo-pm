@@ -17,7 +17,7 @@ class overview(Method):
 
     def gdo_execute(self) -> GDT:
         cont = GDT_Container().add_fields(
-            GDT_Link().href(self.gdo_module().href('send')).text('link_pm_compose'),
+            GDT_Link().href(self.gdo_module().href('send')).icon('create').text('link_pm_compose'),
             folders().env_copy(self).args_copy(self),
             folder().env_copy(self).args_copy(self)
         )
