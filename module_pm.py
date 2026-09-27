@@ -46,7 +46,7 @@ class module_pm(GDO_Module):
     def gdo_module_config(self) -> list[GDT]:
         return [
             GDT_Bool('mail_on_pm').initial('1'),
-            GDT_Bool('welcome_pm').initial('1'),
+            GDT_Bool('welcome_pm').initial('0'),
             GDT_User('welcome_pm_sender').not_null().initial('1'),
         ]
 

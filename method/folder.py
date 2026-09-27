@@ -34,6 +34,9 @@ class folder(MethodQueryTable):
     def gdo_table_headers(self) -> list[GDT]:
         return self.gdo_table().columns_only('pm_from', 'pm_to', 'pm_title', 'pm_created')
 
+    def gdo_order_default(self):
+        return 'pm_created DESC'
+
     def gdo_table_query(self) -> Query:
         user = self._env_user
         fid = self.param_val('folder')
