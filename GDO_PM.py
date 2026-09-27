@@ -36,6 +36,9 @@ class GDO_PM(GDO):
     def render_title(self) -> str:
         return self.gdo_val('pm_title')
 
+    def is_unread(self) -> bool:
+        return self.gdo_value('pm_read') is None
+
     def get_other_user_key(self, user: GDO_User) -> str:
         return 'pm_from' if user.get_id() == self.gdo_val('pm_to') else 'pm_to'
 

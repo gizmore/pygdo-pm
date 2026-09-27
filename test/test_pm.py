@@ -79,6 +79,15 @@ class PMTest(GDOTestCase):
         self.assertRegex(rendered, r'^\d{2}/\d{2}/\d{4} \d{2}:\d{2} \(.+\)$')
         self.assertNotRegex(rendered, r'^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}')
 
+    def test_unread_pm_title_has_a_new_icon(self):
+        unread = GDO_PM.blank({'pm_title': 'Unread', 'pm_read': None})
+        rendered = folder().render_pm_title(unread.column('pm_title'), unread)
+        self.assertIn('fa-star', rendered)
+        self.assertIn('color: var(--gdo-new)', rendered)
+
+        read = GDO_PM.blank({'pm_title': 'Read', 'pm_read': '2026-09-27 08:30:00.000'})
+        self.assertNotIn('fa-star', folder().render_pm_title(read.column('pm_title'), read))
+
     def test_03b_send_pm_from_web_form(self):
         target = web_gizmore()
         out = web_plug('pm.send.html?_lang=en').user('Peter').post({
