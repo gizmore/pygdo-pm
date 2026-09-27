@@ -2,6 +2,7 @@ from gdo.base.GDO import GDO
 from gdo.base.GDT import GDT
 from gdo.base.Query import Query
 from gdo.core.GDT_UInt import GDT_UInt
+from gdo.form.GDT_Form import GDT_Form
 from gdo.pm.GDO_PMFolder import GDO_PMFolder
 from gdo.table.MethodQueryTable import MethodQueryTable
 from gdo.ui.GDT_Link import GDT_Link
@@ -29,12 +30,19 @@ class folders(MethodQueryTable):
     def gdo_order_name(self) -> str:
         return 'of'
 
+    def gdo_create_form(self, form: GDT_Form) -> None:
+        form.slim()
+        super().gdo_create_form(form)
+
     def gdo_table_headers(self) -> list[GDT]:
         t = self.gdo_table()
         return [
             t.column('pmf_name'),
             GDT_UInt('pmf_count').label('count'),
         ]
+
+    def gdo_render_table_headers(self) -> bool:
+        return False
 
     def render_pmf_name(self, gdt: GDT, gdo: GDO) -> str:
         return GDT_Link().text_raw(gdt.get_val()).icon('folder').href(

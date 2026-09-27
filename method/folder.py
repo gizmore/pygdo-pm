@@ -5,6 +5,8 @@ from gdo.base.GDT import GDT
 from gdo.base.Query import Query
 from gdo.base.Render import Mode
 from gdo.base.util.href import href
+from gdo.date.GDT_Timestamp import GDT_Timestamp
+from gdo.date.Time import Time
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.GDT_PMFolder import GDT_PMFolder
 from gdo.table.MethodQueryTable import MethodQueryTable
@@ -26,6 +28,9 @@ class folder(MethodQueryTable):
             GDT_PMFolder('folder').initial('1').not_null(),
         ]
 
+    def gdo_render_pagination_top(self) -> bool:
+        return False
+
     def gdo_table_headers(self) -> list[GDT]:
         return self.gdo_table().columns_only('pm_from', 'pm_to', 'pm_title', 'pm_created')
 
@@ -36,6 +41,10 @@ class folder(MethodQueryTable):
 
     def render_pm_title(self, gdt: GDT_Title, gdo: GDO) -> str:
         return GDT_Link().text_raw(gdt.get_val()).href(href('pm', 'view', f'&id={gdo.get_id()}')).icon(None).render()
+
+    def render_pm_created(self, gdt: GDT_Timestamp, gdo: GDO) -> str:
+        """Show the exact send time and its relative age in PM folders."""
+        return f'{gdt.render_format(Time.FMT_SHORT)} ({gdt.render_format(Time.FMT_AGO)})'
 
     def render_gdo(self, gdo: GDO, mode: Mode) -> Any:
         return f'{gdo.get_id()}-{gdo.gdo_val('pm_title')}'

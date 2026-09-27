@@ -9,6 +9,8 @@ from gdo.core.GDO_User import GDO_User
 from gdo.core.connector.Web import Web
 from gdo.base.util.href import href
 from gdo.pm.GDO_PM import GDO_PM
+from gdo.pm.method.folder import folder
+from gdo.pm.method.folders import folders
 from gdo.pm.module_pm import module_pm
 from gdotest.TestUtil import reinstall_module, cli_plug, GDOTestCase, web_plug, WebPlug, cli_gizmore, web_gizmore, install_module
 
@@ -71,6 +73,12 @@ class PMTest(GDOTestCase):
         self.assertLess(rendered.index('<a '), rendered.index('<img '))
         self.assertLess(rendered.index('<img '), rendered.index('</a>'))
 
+    def test_folder_created_renders_datetime_and_age(self):
+        pm = GDO_PM.blank({'pm_created': '2026-09-26 15:30:00.000'})
+        rendered = folder().render_pm_created(pm.column('pm_created'), pm)
+        self.assertRegex(rendered, r'^\d{2}/\d{2}/\d{4} \d{2}:\d{2} \(.+\)$')
+        self.assertNotRegex(rendered, r'^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}')
+
     def test_03b_send_pm_from_web_form(self):
         target = web_gizmore()
         out = web_plug('pm.send.html?_lang=en').user('Peter').post({
@@ -100,8 +108,10 @@ class PMTest(GDOTestCase):
 
     def test_04_folders(self):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
-        self.assertIn("order_pmf_count", out, "Web overview does not render nicely.")
         self.assertIn("pm.overview.folder.1.html", out, "PM folder names do not link to the overview folder view.")
+
+    def test_folders_do_not_render_table_headers(self):
+        self.assertFalse(folders().gdo_render_table_headers())
 
     def test_05_searches_object_sender_name_in_folder(self):
         target = web_gizmore()
