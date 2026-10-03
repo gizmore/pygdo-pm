@@ -4,6 +4,7 @@ from gdo.base.GDT import GDT
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_AutoInc import GDT_AutoInc
 from gdo.core.GDT_Bool import GDT_Bool
+from gdo.core.GDT_UInt import GDT_UInt
 from gdo.core.GDT_User import GDT_User
 from gdo.date.GDT_Created import GDT_Created
 from gdo.date.GDT_Timestamp import GDT_Timestamp
@@ -19,6 +20,10 @@ class GDO_PM(GDO):
     def gdo_columns(self) -> list[GDT]:
         return [
             GDT_AutoInc('pm_id'),
+            # A self-reference is stored as an ID.  Keeping this as an UInt
+            # avoids recursive schema construction while still permitting
+            # lightweight PM thread navigation.
+            GDT_UInt('pm_parent'),
             GDT_PMFolder('pm_folder').label('folder').not_null().cascade_delete(),
             GDT_User('pm_from').label('from').not_null(),
             GDT_User('pm_to').label('to').not_null().cascade_delete(),
@@ -32,6 +37,10 @@ class GDO_PM(GDO):
 
     def get_owner(self) -> GDO_User:
         return self.gdo_value('pm_owner')
+
+    def get_parent(self) -> 'GDO_PM | None':
+        parent_id = self.gdo_val('pm_parent')
+        return self.table().get_by_aid(parent_id) if parent_id else None
 
     def render_title(self) -> str:
         return self.gdo_val('pm_title')

@@ -3,6 +3,7 @@ from gdo.base.GDT import GDT
 from gdo.base.IPC import IPC
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_RestOfText import GDT_RestOfText
+from gdo.core.GDT_UInt import GDT_UInt
 from gdo.core.GDT_User import GDT_User
 from gdo.date.Time import Time
 from gdo.form.GDT_Form import GDT_Form
@@ -26,6 +27,7 @@ class send(MethodForm):
     def gdo_create_form(self, form: GDT_Form) -> None:
         form.add_fields(
             GDT_User('to').not_null().with_completion(),
+            GDT_UInt('parent').hidden(),
             GDT_Title('title').not_null(),
         )
         if self._env_http:
@@ -37,17 +39,24 @@ class send(MethodForm):
     def form_submitted(self) -> GDT:
         sender = self._env_user
         target = self.param_value('to') # type: GDO_User
+        parent_id = self.param_val('parent')
+        parent = GDO_PM.table().get_by_aid(parent_id) if parent_id else None
+        if parent_id and parent is None:
+            return self.err('err_param', ('parent', 'Unknown PM.'))
+        if parent is not None and parent.get_owner() != sender:
+            return self.err('err_permission', ('parent',))
         title = self.param_value('title')
         # GDT_Message stores the editable text in its ``*_input`` component.
         # CLI uses GDT_RestOfText directly, while the web form uses the
         # composite field and therefore has to read the component value.
         message = self.param_value('message_input') if self._env_http else self.param_value('message')
-        self.send_pm(sender, target, title, message)
+        self.send_pm(sender, target, title, message, parent)
         return self.reply('msg_pm_sent', (target.render_name(),))
 
-    def send_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str):
-        self.create_pm(sender, target, title, message, sender, True)
-        pm = self.create_pm(sender, target, title, message, target, False)
+    def send_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str,
+                parent: GDO_PM | None = None):
+        self.create_pm(sender, target, title, message, sender, True, parent)
+        pm = self.create_pm(sender, target, title, message, target, False, parent)
         GDO_PM.clear_unread_count(target)
         # Unit tests do not run a Dog event loop. Production sends the IPC so
         # the receiving connector can render the message through pm.view.
@@ -56,11 +65,13 @@ class send(MethodForm):
         if module_pm.instance().cfg_email_on_pm() and target.get_setting_val('email_on_pm') == '1':
             self.send_email(pm)
 
-    def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str, owner: GDO_User, mark_read: bool):
+    def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str,
+                  owner: GDO_User, mark_read: bool, parent: GDO_PM | None = None):
         return GDO_PM.blank({
             # A PM to oneself has identical sender and recipient. The sender
             # copy is nevertheless the sent copy and belongs in SentBox.
             'pm_folder': '2' if mark_read else '1',
+            'pm_parent': parent.get_id() if parent else None,
             'pm_from': sender.get_id(),
             'pm_to': target.get_id(),
             'pm_owner': owner.get_id(),

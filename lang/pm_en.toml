@@ -36,6 +36,16 @@ md_pm_view = "Read a PM for this website."
 mt_pm_read = "Read PM"
 md_pm_next = "Read a PM or the next unread pm and mark it read."
 msg_no_more_new_pm = "There are no unread pm for you."
+link_pm_reply = "Reply"
+link_pm_follow_up = "Follow Up"
+link_pm_prev_thread = "Prev Thread"
+link_pm_next_thread = "Next Thread"
+
+#########
+# Reply #
+#########
+mt_pm_reply = "Reply"
+md_pm_reply = "Reply to a private message."
 
 ##########
 # Folder #

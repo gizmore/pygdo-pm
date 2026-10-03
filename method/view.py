@@ -6,6 +6,8 @@ from gdo.date.Time import Time
 from gdo.language.GDT_Trans import GDT_Trans
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.ui.GDT_Card import GDT_Card
+from gdo.ui.GDT_Link import GDT_Link
+from gdo.ui.GDT_Menu import GDT_Menu
 
 
 class view(Method):
@@ -45,9 +47,48 @@ class view(Method):
             GDT_Trans().text_raw(
                 f'{created.render_format(Time.FMT_SHORT)} '
                 f'({created.render_format(Time.FMT_AGO)})'))
+        card.get_footer().add_field(self.render_navigation(pm))
         return card
+
+    def render_navigation(self, pm: GDO_PM) -> GDT_Menu:
+        """Offer the next useful PM action without leaving the reading flow."""
+        follow_up = self.get_follow_up_pm(pm)
+        prev_thread = self.get_prev_thread_pm(pm)
+        next_thread = self.get_next_thread_pm(pm)
+        return GDT_Menu().horizontal().add_fields(
+            GDT_Link().href(self.gdo_module().href(
+                'reply', f'&id={pm.get_id()}'
+            )).text('link_pm_reply').icon('reply'),
+            GDT_Link().href(self.gdo_module().href(
+                'view', f'&id={follow_up.get_id() if follow_up else 0}'
+            )).text('link_pm_follow_up').icon('forward').disabled(follow_up is None),
+            GDT_Link().href(self.gdo_module().href(
+                'view', f'&id={prev_thread.get_id() if prev_thread else 0}'
+            )).text('link_pm_prev_thread').icon('backward').disabled(prev_thread is None),
+            GDT_Link().href(self.gdo_module().href(
+                'view', f'&id={next_thread.get_id() if next_thread else 0}'
+            )).text('link_pm_next_thread').icon('forward').disabled(next_thread is None),
+        )
 
     def get_unread_pm(self) -> GDO_PM | None:
         return (GDO_PM.table().select().where(
             f"pm_owner={self._env_user.get_id()} AND pm_read IS NULL"
         ).first().order('pm_created ASC').exec().fetch_object())
+
+    def get_next_thread_pm(self, pm: GDO_PM) -> GDO_PM | None:
+        """Return the next older root PM, matching the inbox's newest-first order."""
+        return (GDO_PM.table().select().where(
+            f'pm_owner={self._env_user.get_id()} AND pm_parent IS NULL AND pm_id<{pm.get_id()}'
+        ).first().order('pm_id DESC').exec().fetch_object())
+
+    def get_prev_thread_pm(self, pm: GDO_PM) -> GDO_PM | None:
+        """Return the previous (newer) root PM in the inbox order."""
+        return (GDO_PM.table().select().where(
+            f'pm_owner={self._env_user.get_id()} AND pm_parent IS NULL AND pm_id>{pm.get_id()}'
+        ).first().order('pm_id ASC').exec().fetch_object())
+
+    def get_follow_up_pm(self, pm: GDO_PM) -> GDO_PM | None:
+        """Return the first reply belonging to this PM in the owner's thread."""
+        return (GDO_PM.table().select().where(
+            f'pm_owner={self._env_user.get_id()} AND pm_parent={pm.get_id()}'
+        ).first().order('pm_id ASC').exec().fetch_object())

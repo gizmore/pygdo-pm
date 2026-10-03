@@ -181,6 +181,45 @@ class PMTest(GDOTestCase):
         self.assertIsNone(card['footer'][0]['name'])
         self.assertRegex(card['footer'][0]['value'], r'^\d{2}/\d{2}/\d{4} \d{2}:\d{2} \(.+\)$')
 
+    async def test_pm_read_navigation_links_and_reply_parent(self):
+        target = await Web.get_server().get_or_create_user(f'pm-nav-{uuid4().hex[:8]}')
+        target._authenticated = True
+        early_title = f'Early thread {uuid4().hex}'
+        late_title = f'Late thread {uuid4().hex}'
+        self.assertIn('has been sent', cli_plug(self.peter, f'$pm.send {target.get_id()} "{early_title}" Early'))
+        early = GDO_PM.table().get_by_vals({'pm_owner': target.get_id(), 'pm_title': early_title})
+        early.save_val('pm_read', Time.get_date())
+        self.assertIn('has been sent', cli_plug(self.peter, f'$pm.send {target.get_id()} "{late_title}" Late'))
+        late = GDO_PM.table().get_by_vals({'pm_owner': target.get_id(), 'pm_title': late_title})
+
+        out = web_plug(f'pm.read.html?id={late.get_id()}&_lang=en').user(target.get_name()).exec()
+        self.assertIn(f'pm.reply.id.{late.get_id()}.html', out)
+        self.assertIn(f'pm.view.id.{early.get_id()}.html', out)
+        self.assertIn('Reply', out)
+        self.assertIn('Follow Up', out)
+        self.assertIn('Prev Thread', out)
+        self.assertIn('Next Thread', out)
+        self.assertIn('gdt-link-disabled', out)
+
+        reply_form = web_plug(f'pm.reply.id.{late.get_id()}.html?_lang=en').user(target.get_name()).exec()
+        self.assertIn('Reply', reply_form)
+        self.assertIn(f'value="{late.get_id()}"', reply_form)
+        self.assertIn('disabled="disabled"', reply_form)
+
+        from gdo.pm.method.send import send
+        send().send_pm(target, self.peter, f'Re: {late_title}', 'Reply body', late)
+        reply_pm = GDO_PM.table().get_by_vals({
+            'pm_owner': self.peter.get_id(),
+            'pm_title': f'Re: {late_title}',
+        })
+        self.assertEqual(str(late.get_id()), reply_pm.gdo_val('pm_parent'))
+        follow_up = GDO_PM.table().get_by_vals({
+            'pm_owner': target.get_id(),
+            'pm_title': f'Re: {late_title}',
+        })
+        out = web_plug(f'pm.read.html?id={late.get_id()}&_lang=en').user(target.get_name()).exec()
+        self.assertIn(f'pm.view.id.{follow_up.get_id()}.html', out)
+
     def test_03c_send_pm_to_self_uses_inbox_and_sentbox(self):
         user = web_gizmore()
         title = f'Self PM {uuid4().hex}'
