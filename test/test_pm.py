@@ -1,4 +1,5 @@
 import os
+import json
 import unittest
 from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -146,6 +147,40 @@ class PMTest(GDOTestCase):
         self.assertIn('From', out)
         self.assertNotIn('To: Peter', out)
 
+    def test_pm_read_renders_its_card_as_text(self):
+        target = web_gizmore()
+        title = f'Text card {uuid4().hex}'
+        sent = cli_plug(self.peter, f'$pm.send {target.get_id()} "{title}" Text body')
+        self.assertIn('has been sent', sent)
+        pm = GDO_PM.table().get_by_vals({
+            'pm_owner': target.get_id(),
+            'pm_title': title,
+        })
+
+        out = web_plug(f'pm.read.txt?id={pm.get_id()}&_lang=en').user('gizmore').exec()
+        self.assertIn(title, out)
+        self.assertIn('Text body', out)
+        self.assertIn('From:', out)
+
+    def test_pm_read_renders_its_card_as_json(self):
+        target = web_gizmore()
+        title = f'JSON card {uuid4().hex}'
+        sent = cli_plug(self.peter, f'$pm.send {target.get_id()} "{title}" JSON body')
+        self.assertIn('has been sent', sent)
+        pm = GDO_PM.table().get_by_vals({
+            'pm_owner': target.get_id(),
+            'pm_title': title,
+        })
+
+        out = web_plug(f'pm.read.json?id={pm.get_id()}&_lang=en').user('gizmore').exec()
+        card = json.loads(out)['data']
+        self.assertEqual(title, card['title'])
+        self.assertEqual('pm_from', card['header'][0]['name'])
+        self.assertEqual('pm_message', card['content'][0]['name'])
+        self.assertEqual('JSON body', card['content'][0]['value'])
+        self.assertIsNone(card['footer'][0]['name'])
+        self.assertRegex(card['footer'][0]['value'], r'^\d{2}/\d{2}/\d{4} \d{2}:\d{2} \(.+\)$')
+
     def test_03c_send_pm_to_self_uses_inbox_and_sentbox(self):
         user = web_gizmore()
         title = f'Self PM {uuid4().hex}'
@@ -161,6 +196,11 @@ class PMTest(GDOTestCase):
         out = web_plug("pm.folders.html?_lang=en&of=pmf_name%20ASC").user("gizmore").exec()
         self.assertIn("pm.overview.folder.1.html", out, "PM folder names do not link to the overview folder view.")
         self.assertIn('class="shrink table table-striped table-bordered"', out)
+
+    def test_folders_render_as_json(self):
+        out = web_plug('pm.folders.json?_lang=en').user('gizmore').exec()
+        payload = json.loads(out)
+        self.assertEqual(200, payload['code'])
 
     def test_folder_renders_shrink_participant_cells(self):
         out = web_plug("pm.list.html?_lang=en&folder=1").user("gizmore").exec()
@@ -223,6 +263,16 @@ class PMTest(GDOTestCase):
         out = web_plug("pm.overview.html?_lang=en&_o=pm_title%20DESC").user("gizmore").exec()
         self.assertIn("Compose PM", out, "PM overview does not link to the compose form.")
         self.assertIn('aria-label="create Icon"', out, "PM overview compose link has no create icon.")
+
+    def test_pm_overview_renders_embedded_methods_as_json(self):
+        out = web_plug('pm.overview.json?_lang=en').user('gizmore').exec()
+        payload = json.loads(out)
+        self.assertEqual(200, payload['code'])
+        data = payload['data']
+        self.assertIn('folders', data)
+        self.assertIn('folder', data)
+        self.assertIn('table', data['folders'])
+        self.assertIn('table', data['folder'])
         self.assertNotIn("order_pmf_count", out, "PM folder table should not render headers.")
 
     def test_09_pm_settings(self):
