@@ -160,6 +160,14 @@ class PMTest(GDOTestCase):
         )
         query.exec.assert_called_once()
 
+    def test_pm_folder_reset_uses_its_form_href(self):
+        method = folder()
+        method.get_form().href('/pm.overview.html?folder=1&f=unread&s=hello&o=pm_title+ASC&page=2&keep=yes')
+        self.assertEqual(
+            '/pm.overview.html?folder=1&keep=yes',
+            method.table_reset_href(),
+        )
+
     def test_folders_do_not_render_table_headers(self):
         self.assertFalse(folders().gdo_render_table_headers())
 
