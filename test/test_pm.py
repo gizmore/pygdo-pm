@@ -12,6 +12,7 @@ from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.method.folder import folder
 from gdo.pm.method.folders import folders
 from gdo.pm.module_pm import module_pm
+from gdo.date.Time import Time
 from gdotest.TestUtil import reinstall_module, cli_plug, GDOTestCase, web_plug, WebPlug, cli_gizmore, web_gizmore, install_module
 
 
@@ -123,6 +124,27 @@ class PMTest(GDOTestCase):
         })
         self.assertIsNotNone(pm)
         self.assertEqual('Web message body', pm.gdo_val('pm_message_input'))
+
+    def test_pm_read_renders_a_card_with_short_date_and_age(self):
+        target = web_gizmore()
+        title = f'Card view {uuid4().hex}'
+        sent = cli_plug(self.peter, f'$pm.send {target.get_id()} "{title}" Card body')
+        self.assertIn('has been sent', sent)
+        pm = GDO_PM.table().get_by_vals({
+            'pm_owner': target.get_id(),
+            'pm_title': title,
+        })
+        self.assertIsNotNone(pm)
+
+        out = web_plug(f'pm.read.html?id={pm.get_id()}&_lang=en').user('gizmore').exec()
+        created = pm.column('pm_created')
+        expected = (
+            f'{created.render_format(Time.FMT_SHORT)} '
+            f'({created.render_format(Time.FMT_AGO)})')
+        self.assertIn('pm-read-card', out)
+        self.assertIn(expected, out)
+        self.assertIn('From', out)
+        self.assertNotIn('To: Peter', out)
 
     def test_03c_send_pm_to_self_uses_inbox_and_sentbox(self):
         user = web_gizmore()

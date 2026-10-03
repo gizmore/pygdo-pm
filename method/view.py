@@ -1,11 +1,9 @@
-from gdo.avatar.GDT_Avatar import GDT_Avatar
 from gdo.base.GDT import GDT
 from gdo.base.Method import Method
 from gdo.base.Trans import t
-from gdo.base.Util import module_enabled
 from gdo.core.GDT_Object import GDT_Object
-from gdo.core.GDT_String import GDT_String
 from gdo.date.Time import Time
+from gdo.language.GDT_Trans import GDT_Trans
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.ui.GDT_Card import GDT_Card
 
@@ -35,14 +33,18 @@ class view(Method):
         if pm.gdo_val('pm_read') is None:
             pm.save_val('pm_read', Time.get_date())
             GDO_PM.clear_unread_count(self._env_user)
-        card = GDT_Card().gdo(pm)
+        card = GDT_Card().gdo(pm).add_class('pm-read-card')
         card.title_raw(pm.render_title())
-        if module_enabled('avatar'):
-            card.image(GDT_Avatar('avatar').for_user(pm.get_other_user(self._env_user)))
-        card.get_header().add_fields(pm.column('pm_from'), GDT_String('between').text('%s', ('->', )))
-        card.get_header().add_field(pm.column('pm_to'))
+        # A private message is viewed from its owner's perspective. Show the
+        # counterpart once, labelled by the meaningful direction.
+        card.get_header().add_field(
+            pm.column(pm.get_other_user_key(self._env_user)))
         card.get_content().add_fields(pm.column('pm_message'))
-        card.get_footer().add_field(pm.column('pm_created'))
+        created = pm.column('pm_created')
+        card.get_footer().add_field(
+            GDT_Trans().text_raw(
+                f'{created.render_format(Time.FMT_SHORT)} '
+                f'({created.render_format(Time.FMT_AGO)})'))
         return card
 
     def get_unread_pm(self) -> GDO_PM | None:

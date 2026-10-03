@@ -65,6 +65,9 @@ class module_pm(GDO_Module):
             settings.append(GDT_Bool('email_on_pm').not_null().initial('0'))
         return settings
 
+    def gdo_load_scripts(self, page: GDT_Page):
+        self.add_css('css/pygdo-pm.css')
+
     def gdo_init_sidebar(self, page: 'GDT_Page'):
         user = GDO_User.current()
         if user.is_authenticated():
