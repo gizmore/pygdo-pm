@@ -76,16 +76,16 @@ class view(Method):
         ).first().order('pm_created ASC').exec().fetch_object())
 
     def get_next_thread_pm(self, pm: GDO_PM) -> GDO_PM | None:
-        """Return the next older root PM, matching the inbox's newest-first order."""
-        return (GDO_PM.table().select().where(
-            f'pm_owner={self._env_user.get_id()} AND pm_parent IS NULL AND pm_id<{pm.get_id()}'
-        ).first().order('pm_id DESC').exec().fetch_object())
-
-    def get_prev_thread_pm(self, pm: GDO_PM) -> GDO_PM | None:
-        """Return the previous (newer) root PM in the inbox order."""
+        """Return the next newer root PM."""
         return (GDO_PM.table().select().where(
             f'pm_owner={self._env_user.get_id()} AND pm_parent IS NULL AND pm_id>{pm.get_id()}'
         ).first().order('pm_id ASC').exec().fetch_object())
+
+    def get_prev_thread_pm(self, pm: GDO_PM) -> GDO_PM | None:
+        """Return the previous (older) root PM."""
+        return (GDO_PM.table().select().where(
+            f'pm_owner={self._env_user.get_id()} AND pm_parent IS NULL AND pm_id<{pm.get_id()}'
+        ).first().order('pm_id DESC').exec().fetch_object())
 
     def get_follow_up_pm(self, pm: GDO_PM) -> GDO_PM | None:
         """Return the first reply belonging to this PM in the owner's thread."""
