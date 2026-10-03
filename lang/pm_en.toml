@@ -42,3 +42,9 @@ msg_no_more_new_pm = "There are no unread pm for you."
 ##########
 mt_pm_folder = "PM Folder"
 md_pm_folder = "Show a PM Folder like inbox(1) and outbox(2)"
+
+###########
+# Folders #
+###########
+mt_pm_folders = "PM Folders"
+md_pm_folders = "PM Folders Overview. Your In and Outbox."
