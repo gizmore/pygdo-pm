@@ -55,6 +55,9 @@ class PMTest(GDOTestCase):
         target = web_gizmore()
         result = cli_plug(self.peter, f'$pm.send {target.get_id()} "Hi There" <b>Message<i>Body</i></b>')
         self.assertIn('has been sent', result, 'Message sending does not work.')
+        pm = GDO_PM.table().get_by_vals({'pm_owner': target.get_id(), 'pm_title': 'Hi There'})
+        self.assertEqual('<b>Message<i>Body</i></b>', pm.gdo_val('pm_message_input'))
+        self.assertEqual('html', pm.gdo_val('pm_message_editor'))
         self.assertEqual('0', GDO_PM.unread_count(cli_gizmore()))
 
     def test_sending_pm_emits_new_pm_ipc_outside_tests(self):
@@ -66,6 +69,31 @@ class PMTest(GDOTestCase):
         ):
             send().send_pm(self.peter, self.other, 'IPC test', 'Private message')
         ipc.assert_called_once_with('pm.ipc_new_pm', (self.other.get_id(),))
+
+    async def test_linked_recipient_uses_master_mailbox_and_direct_connector(self):
+        """A PM to a connector identity belongs to its linked master mailbox."""
+        from gdo.pm.method.send import send
+
+        master = await Web.get_server().get_or_create_user(f'pm-master-{uuid4().hex[:8]}')
+        linked = await Web.get_server().get_or_create_user(f'pm-linked-{uuid4().hex[:8]}')
+        master._authenticated = linked._authenticated = True
+        linked.save_val('user_link', master.get_id())
+        title = f'Linked PM {uuid4().hex}'
+        with (
+            patch.object(Application, 'IS_TEST', False),
+            patch('gdo.pm.method.send.IPC.send') as ipc,
+        ):
+            send().send_pm(self.peter, linked, title, 'Private message')
+        ipc.assert_called_once_with('pm.ipc_new_pm', (linked.get_id(),))
+
+        received = GDO_PM.table().get_by_vals({
+            'pm_owner': master.get_id(),
+            'pm_title': title,
+        })
+        self.assertIsNotNone(received)
+        self.assertEqual(str(linked.get_id()), received.gdo_val('pm_to'))
+        self.assertEqual('pm_from', received.get_other_user_key(master))
+        self.assertEqual('1', GDO_PM.unread_count(linked))
 
     async def test_new_pm_ipc_runs_the_login_delivery(self):
         from gdo.pm.method.ipc_new_pm import ipc_new_pm

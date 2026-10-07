@@ -18,7 +18,7 @@ class reply(send):
         return self.param_value('id')
 
     def gdo_execute(self) -> GDT:
-        if self.get_pm().get_owner() != self._env_user:
+        if self.get_pm().get_owner() != self._env_user.get_effective_user():
             return self.err('err_permission', ('owner',))
         return super().gdo_execute()
 
@@ -33,5 +33,6 @@ class reply(send):
         pm = self.get_pm()
         title = self.param_value('title')
         message = self.param_value('message_input') if self._env_http else self.param_value('message')
-        self.send_pm(self._env_user, pm.get_other_user(self._env_user), title, message, pm)
+        sender = self._env_reply_to or self._env_user
+        self.send_pm(sender, pm.get_other_user(self._env_user), title, message, pm)
         return self.reply('msg_pm_sent', (pm.get_other_user(self._env_user).render_name(),))

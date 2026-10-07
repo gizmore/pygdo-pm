@@ -53,7 +53,7 @@ class folders(MethodQueryTable):
         ).render()
 
     def gdo_table_query(self) -> Query:
-        uid = self._env_user.get_id()
+        uid = self._env_user.get_effective_user().get_id()
         query = super().gdo_table_query()
         condition = (f'(SELECT COUNT(*) FROM gdo_pm WHERE pm_folder = gdo_pmfolder.pmf_id '
                      f'AND pm_owner={uid}) AS pmf_count')

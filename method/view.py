@@ -25,22 +25,23 @@ class view(Method):
         return self.param_value('id')
 
     def gdo_execute(self) -> GDT:
+        owner = self._env_user.get_effective_user()
         pm = self.get_pm()
         if pm is None:
             pm = self.get_unread_pm()
             if pm is None:
                 return self.msg('msg_no_more_new_pm')
-        if pm.get_owner() != self._env_user:
+        if pm.get_owner() != owner:
             return self.err('err_permission', (t('owner'),))
         if pm.gdo_val('pm_read') is None:
             pm.save_val('pm_read', Time.get_date())
-            GDO_PM.clear_unread_count(self._env_user)
+            GDO_PM.clear_unread_count(owner)
         card = GDT_Card().gdo(pm).add_class('pm-read-card')
         card.title_raw(pm.render_title())
         # A private message is viewed from its owner's perspective. Show the
         # counterpart once, labelled by the meaningful direction.
         card.get_header().add_field(
-            pm.column(pm.get_other_user_key(self._env_user)))
+            pm.column(pm.get_other_user_key(owner)))
         card.get_content().add_fields(pm.column('pm_message'))
         created = pm.column('pm_created')
         card.get_footer().add_field(
@@ -71,24 +72,28 @@ class view(Method):
         )
 
     def get_unread_pm(self) -> GDO_PM | None:
+        owner = self._env_user.get_effective_user()
         return (GDO_PM.table().select().where(
-            f"pm_owner={self._env_user.get_id()} AND pm_read IS NULL"
+            f"pm_owner={owner.get_id()} AND pm_read IS NULL"
         ).first().order('pm_created ASC').exec().fetch_object())
 
     def get_next_thread_pm(self, pm: GDO_PM) -> GDO_PM | None:
         """Return the next newer root PM."""
+        owner = self._env_user.get_effective_user()
         return (GDO_PM.table().select().where(
-            f'pm_owner={self._env_user.get_id()} AND pm_parent IS NULL AND pm_id>{pm.get_id()}'
+            f'pm_owner={owner.get_id()} AND pm_parent IS NULL AND pm_id>{pm.get_id()}'
         ).first().order('pm_id ASC').exec().fetch_object())
 
     def get_prev_thread_pm(self, pm: GDO_PM) -> GDO_PM | None:
         """Return the previous (older) root PM."""
+        owner = self._env_user.get_effective_user()
         return (GDO_PM.table().select().where(
-            f'pm_owner={self._env_user.get_id()} AND pm_parent IS NULL AND pm_id<{pm.get_id()}'
+            f'pm_owner={owner.get_id()} AND pm_parent IS NULL AND pm_id<{pm.get_id()}'
         ).first().order('pm_id DESC').exec().fetch_object())
 
     def get_follow_up_pm(self, pm: GDO_PM) -> GDO_PM | None:
         """Return the first reply belonging to this PM in the owner's thread."""
+        owner = self._env_user.get_effective_user()
         return (GDO_PM.table().select().where(
-            f'pm_owner={self._env_user.get_id()} AND pm_parent={pm.get_id()}'
+            f'pm_owner={owner.get_id()} AND pm_parent={pm.get_id()}'
         ).first().order('pm_id ASC').exec().fetch_object())

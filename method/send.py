@@ -1,6 +1,7 @@
 from gdo.base.Application import Application
 from gdo.base.GDT import GDT
 from gdo.base.IPC import IPC
+from gdo.base.Render import Mode, Render
 from gdo.core.GDO_User import GDO_User
 from gdo.core.GDT_RestOfText import GDT_RestOfText
 from gdo.core.GDT_UInt import GDT_UInt
@@ -10,6 +11,7 @@ from gdo.form.GDT_Form import GDT_Form
 from gdo.form.MethodForm import MethodForm
 from gdo.mail.Mail import Mail
 from gdo.message.GDT_Message import GDT_Message
+from gdo.message.editor.GDT_Editor import GDT_Editor
 from gdo.pm.GDO_PM import GDO_PM
 from gdo.pm.module_pm import module_pm
 from gdo.ui.GDT_Title import GDT_Title
@@ -37,26 +39,25 @@ class send(MethodForm):
         super().gdo_create_form(form)
 
     def form_submitted(self) -> GDT:
-        sender = self._env_user
+        sender = self._env_reply_to or self._env_user
         target = self.param_value('to') # type: GDO_User
         parent_id = self.param_val('parent')
         parent = GDO_PM.table().get_by_aid(parent_id) if parent_id else None
         if parent_id and parent is None:
             return self.err('err_param', ('parent', 'Unknown PM.'))
-        if parent is not None and parent.get_owner() != sender:
+        if parent is not None and parent.get_owner() != sender.get_effective_user():
             return self.err('err_permission', ('parent',))
         title = self.param_value('title')
-        # GDT_Message stores the editable text in its ``*_input`` component.
-        # CLI uses GDT_RestOfText directly, while the web form uses the
-        # composite field and therefore has to read the component value.
+        # GDT_Message stores web input in its ``*_input`` component; command
+        # input remains a plain RestOfText string until this PM boundary.
         message = self.param_value('message_input') if self._env_http else self.param_value('message')
         self.send_pm(sender, target, title, message, parent)
         return self.reply('msg_pm_sent', (target.render_name(),))
 
-    def send_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str,
+    def send_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str | GDT,
                 parent: GDO_PM | None = None):
-        self.create_pm(sender, target, title, message, sender, True, parent)
-        pm = self.create_pm(sender, target, title, message, target, False, parent)
+        self.create_pm(sender, target, title, message, sender.get_effective_user(), True, parent)
+        pm = self.create_pm(sender, target, title, message, target.get_effective_user(), False, parent)
         GDO_PM.clear_unread_count(target)
         # Unit tests do not run a Dog event loop. Production sends the IPC so
         # the receiving connector can render the message through pm.view.
@@ -65,8 +66,9 @@ class send(MethodForm):
         if module_pm.instance().cfg_email_on_pm() and target.get_setting_val('email_on_pm') == '1':
             self.send_email(pm)
 
-    def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str,
+    def create_pm(self, sender: GDO_User, target: GDO_User, title: str, message: str | GDT,
                   owner: GDO_User, mark_read: bool, parent: GDO_PM | None = None):
+        editor = self.get_editor(owner)
         return GDO_PM.blank({
             # A PM to oneself has identical sender and recipient. The sender
             # copy is nevertheless the sent copy and belongs in SentBox.
@@ -76,13 +78,29 @@ class send(MethodForm):
             'pm_to': target.get_id(),
             'pm_owner': owner.get_id(),
             'pm_title': title,
-            'pm_message_input': self.get_message(message, owner),
+            # Each mailbox owns its input representation.  The source is
+            # normalized to HTML first, then serialized through this user's
+            # configured message editor.
+            'pm_message_editor': editor.get_name(),
+            'pm_message_input': self.get_message(message, editor),
             'pm_read': Time.get_date() if mark_read else None,
             'pm_encrypted': self.get_encrypted(owner),
         }).insert()
 
-    def get_message(self, message: str, user: GDO_User) -> str:
-        return message
+    def get_editor(self, user: GDO_User):
+        name = user.get_setting_val('message_editor') or 'html'
+        return GDT_Editor.EDITORS.get(name, GDT_Editor.EDITORS['html'])
+
+    def get_message_html(self, message: str | GDT) -> str:
+        if isinstance(message, GDT):
+            return message.render_html()
+        # PMs are the one boundary that turns connector input into rich editor
+        # content: source dialect -> canonical tree -> HTML editor input.
+        source = Mode.render_html if self._env_mode == Mode.render_cli else self._env_mode
+        return Render.convert_text(message, source, Mode.render_html)
+
+    def get_message(self, message: str | GDT, editor) -> str:
+        return editor.from_html(self.get_message_html(message))
 
     def get_encrypted(self, user: GDO_User) -> str:
         return '0'

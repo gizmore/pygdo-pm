@@ -49,13 +49,22 @@ class GDO_PM(GDO):
         return self.gdo_value('pm_read') is None
 
     def get_other_user_key(self, user: GDO_User) -> str:
-        return 'pm_from' if user.get_id() == self.gdo_val('pm_to') else 'pm_to'
+        """Return the counterpart without losing linked connector identities."""
+        if user.get_id() == self.gdo_val('pm_to'):
+            return 'pm_from'
+        if user.get_id() == self.gdo_val('pm_from'):
+            return 'pm_to'
+        # A linked account stores its PMs under the master account.  The
+        # mailbox folder still unambiguously tells which concrete user is on
+        # the other side of the conversation.
+        return 'pm_from' if self.gdo_val('pm_folder') == '1' else 'pm_to'
 
     def get_other_user(self, user: GDO_User) -> GDO_User:
         return self.gdo_value(self.get_other_user_key(user))
 
     @classmethod
     def unread_count(cls, user: GDO_User) -> str:
+        user = user.get_effective_user()
         if (cached := Cache.get('new_pm_count', user.get_id())) is not None:
             return cached
         count = str(cls.table().count_where(f'pm_owner={user.get_id()} AND pm_read IS NULL')) or '0'
@@ -64,4 +73,5 @@ class GDO_PM(GDO):
 
     @classmethod
     def clear_unread_count(cls, user: GDO_User) -> None:
+        user = user.get_effective_user()
         Cache.remove('new_pm_count', user.get_id())

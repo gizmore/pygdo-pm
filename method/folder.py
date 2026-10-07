@@ -38,7 +38,7 @@ class folder(MethodQueryTable):
         return 'pm_created DESC'
 
     def gdo_table_query(self) -> Query:
-        user = self._env_user
+        user = self._env_user.get_effective_user()
         fid = self.param_val('folder')
         return super().gdo_table_query().where(f'pm_owner={user.get_id()} AND pm_folder={fid}')
 
