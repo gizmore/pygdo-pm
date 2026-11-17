@@ -11,6 +11,9 @@ from gdo.base.util.href import href
 
 class folders(MethodQueryTable):
 
+    def gdo_needs_authentication(self) -> bool:
+        return True
+
     @classmethod
     def gdo_trigger(cls) -> str:
         return ''

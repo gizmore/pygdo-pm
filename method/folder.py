@@ -16,6 +16,9 @@ from gdo.ui.GDT_Title import GDT_Title
 
 class folder(MethodQueryTable):
 
+    def gdo_needs_authentication(self) -> bool:
+        return True
+
     @classmethod
     def gdo_trigger(cls) -> str:
         return 'pm.list'
